@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보보안 관리 | 경영관리팀</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --text-secondary: #5a6376;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --border-light: #f3f4f6;
+            --accent: #4f46e5;
+            --accent-light: #e0e7ff;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --success: #059669;
+            --success-light: #ecfdf5;
+            --warn: #d97706;
+            --warn-light: #fffbeb;
+            --navy: #0f172a;
+            --radius: 14px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+        body {
+            font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.75; font-size: 15px; min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #4338ca); color: #fff; padding: 22px 24px;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 4px 24px rgba(79,70,229,0.18);
+        }
+        .header::after {
+            content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px;
+            background:rgba(255,255,255,.06); border-radius:50%; pointer-events:none;
+        }
+        .header-inner {
+            max-width: 960px; margin: 0 auto; position: relative;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .header h1 { font-size: 1.15rem; font-weight: 800; }
+        .header .meta { font-size: 0.72rem; opacity: 0.6; margin-top: 2px; }
+        .tab-nav { display: flex; gap: 3px; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 3px; }
+        .tab-btn {
+            padding: 8px 18px; border: none; background: transparent; color: rgba(255,255,255,0.55);
+            font-size: 0.82rem; font-weight: 600; cursor: pointer; border-radius: 8px;
+            transition: all 0.2s; font-family: inherit; white-space: nowrap;
+        }
+        .tab-btn:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+        .tab-btn.active { background: #fff; color: var(--accent); font-weight: 700; box-shadow: 0 2px 8px rgba(79,70,229,0.15); }
+        .main { max-width: 960px; margin: 0 auto; padding: 28px 24px 48px; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .section {
+            background: var(--surface); border: none;
+            border-radius: 14px; padding: 22px 26px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .section-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+        .badge {
+            width: 24px; height: 24px; border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0;
+        }
+        .badge-blue { background: var(--accent-light); color: var(--accent); }
+        .badge-green { background: var(--success-light); color: var(--success); }
+        .badge-red { background: var(--danger-light); color: var(--danger); }
+        .badge-warn { background: var(--warn-light); color: var(--warn); }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .tbl th {
+            text-align: left; padding: 10px 14px; font-weight: 600; color: var(--text-secondary);
+            font-size: 0.78rem; border-bottom: 2px solid var(--border); background: var(--bg);
+        }
+        .tbl td { padding: 11px 14px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+        .tbl td:nth-last-child(2) { white-space: nowrap; }
+        .tbl td:last-child { text-align: center; }
+        .tbl tr:last-child td { border-bottom: none; }
+        .tbl tbody tr:hover td { background: var(--accent-light); transition: background 0.15s; }
+        .tag { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; }
+        .tag-b { background: var(--accent-light); color: var(--accent); }
+        .tag-g { background: var(--success-light); color: var(--success); }
+        .tag-r { background: var(--danger-light); color: var(--danger); }
+        .tag-o { background: var(--warn-light); color: var(--warn); }
+        .page-title { margin-bottom: 28px; }
+        .page-title h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; color: #111827; }
+        .page-title p { font-size: 0.88rem; color: var(--text-secondary); margin-top: 6px; }
+        .callout { border-radius: 12px; padding: 16px 20px; margin: 12px 0; font-size: 0.85rem; line-height: 1.7; }
+        .callout-title { font-weight: 700; margin-bottom: 2px; font-size: 0.83rem; }
+        .callout-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .callout-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .callout-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+        .callout-danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block; }
+        .form-row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+        select, input[type="text"], input[type="date"], input[type="password"] {
+            padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 0.88rem; font-family: inherit; background: var(--surface);
+            outline: none; transition: all 0.15s;
+        }
+        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+        select { min-width: 160px; cursor: pointer; }
+        .check-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid var(--border-light); font-size: 0.87rem;
+        }
+        .check-item:last-child { border-bottom: none; }
+        .check-item input[type="checkbox"] {
+            width: 20px; height: 20px; margin-top: 2px; cursor: pointer;
+            accent-color: var(--accent); flex-shrink: 0;
+        }
+        .check-item label { cursor: pointer; flex: 1; }
+        .check-cat {
+            font-size: 0.78rem; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1px; padding: 16px 0 6px;
+            border-bottom: 2px solid var(--accent-light);
+        }
+        .sign-area {
+            background: var(--surface); border: 2px solid var(--accent);
+            border-radius: 14px; padding: 24px 28px; margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(79,70,229,0.08);
+        }
+        .sign-date { font-size: 1.05rem; font-weight: 600; text-align: center; margin-bottom: 16px; }
+        .sign-input-row {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 1.1rem; font-weight: 700;
+        }
+        .sign-input-row input {
+            width: 120px; text-align: center; font-size: 1.1rem; font-weight: 700;
+            border: none; border-bottom: 2px solid var(--accent); border-radius: 0;
+            padding: 6px 4px; background: transparent; font-family: inherit;
+        }
+        .sign-stamp { font-size: 1.1rem; color: var(--danger); font-weight: 800; }
+        .sign-pad-wrap {
+            display: flex; flex-direction: column; align-items: center; margin-top: 16px;
+        }
+        .sign-pad-label {
+            font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;
+        }
+        .sign-pad-box {
+            position: relative; border: 2px dashed var(--border); border-radius: 12px;
+            background: #fafbfc; overflow: hidden;
+        }
+        .sign-pad-box.active { border-color: var(--accent); background: #fff; }
+        .sign-pad-canvas { display: block; cursor: crosshair; touch-action: none; }
+        .sign-pad-actions {
+            display: flex; justify-content: center; gap: 8px; margin-top: 8px;
+        }
+        .sign-pad-actions button {
+            font-size: 0.75rem; padding: 4px 14px; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text-secondary); cursor: pointer; font-family: inherit; font-weight: 600;
+            transition: all 0.15s;
+        }
+        .sign-pad-actions button:hover { border-color: var(--accent); color: var(--accent); }
+        .sign-pad-placeholder {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 0.82rem; color: var(--text-muted); pointer-events: none; opacity: 0.6;
+            white-space: nowrap;
+        }
+        .btn {
+            padding: 12px 28px; border: none; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: all 0.15s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #4338ca; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-outline { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--border-light); border-color: #d1d5db; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+        .admin-lock { text-align: center; padding: 60px 20px; }
+        .admin-lock p { color: var(--text-secondary); margin-bottom: 16px; }
+        .status-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px; margin-top: 12px;
+        }
+        .status-card {
+            border: none; border-radius: 12px;
+            padding: 12px 14px; font-size: 0.84rem;
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .status-card .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .dot-done { background: var(--success); }
+        .dot-pending { background: var(--border); }
+        .status-card .s-name { font-weight: 600; }
+        .status-card .s-date { font-size: 0.75rem; color: var(--text-muted); }
+        .stat-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-box {
+            background: var(--surface); border: none;
+            border-radius: 14px; padding: 18px 20px; flex: 1; min-width: 140px; text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .stat-num { font-size: 1.6rem; font-weight: 800; line-height: 1.2; color: var(--accent); }
+        .stat-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+        .org-input-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .org-input-row input { flex: 1; }
+        .org-member-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .org-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--accent-light); color: var(--accent);
+            padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+        }
+        .org-tag button {
+            background: none; border: none; color: var(--accent); cursor: pointer;
+            font-size: 0.85rem; padding: 0 2px; font-family: inherit; font-weight: 700;
+        }
+        .team-block { border: none; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; background: var(--bg); }
+        .team-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .team-block-name { font-weight: 700; font-size: 0.9rem; }
+        .quarter-select { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #fff; padding: 14px 28px;
+            border-radius: 12px; font-size: 0.88rem; font-weight: 600;
+            box-shadow: 0 8px 30px rgba(79,70,229,0.25); z-index: 1000;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:999; display:none; align-items:center; justify-content:center; }
+        .modal-overlay.show { display:flex; }
+        .modal-box { background:#fff; border-radius:16px; width:90%; max-width:580px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:fadeIn 0.2s ease; }
+        .modal-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+        .modal-header h3 { font-size:0.95rem; font-weight:700; }
+        .modal-close { background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted); padding:4px; }
+        .modal-body { padding:20px 24px; font-size:0.85rem; line-height:1.8; white-space:pre-line; color:var(--text); }
+        .modal-footer { padding:14px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+        .mgr-input {
+            width: 100%; min-width: 100px; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px;
+            font-size: 0.83rem; font-family: inherit; background: transparent; outline: none;
+            text-align: center; transition: all 0.15s; color: var(--text); font-weight: 400;
+            pointer-events: none;
+        }
+        .mgr-edit-mode .mgr-input {
+            pointer-events: auto; border-color: var(--border); background: #fff; cursor: text;
+        }
+        .mgr-edit-mode .mgr-input:focus { border-color: var(--accent); }
+        .mgr-input::placeholder { color: var(--text-muted); font-weight: 400; }
+        .mgr-edit-btn {
+            position: absolute; top: 12px; right: 16px;
+            padding: 4px 12px; border: 1px solid var(--border); border-radius: 5px;
+            background: var(--surface); color: var(--text-muted); font-size: 0.7rem;
+            font-family: inherit; cursor: pointer; opacity: 0.3; transition: opacity 0.2s;
+        }
+        .mgr-edit-btn:hover { opacity: 0.7; }
+        .mgr-edit-btn.active { opacity: 1; color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+        .upload-area {
+            border: 2px dashed var(--border); border-radius: 14px; padding: 32px 20px;
+            text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
+        }
+        .upload-area:hover, .upload-area.drag-over { border-color: var(--accent); background: var(--accent-light); }
+        .upload-area p { font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; }
+        .upload-icon { font-size: 2rem; margin-bottom: 4px; }
+        .upload-result {
+            background: var(--success-light); border: 1px solid #a7f3d0; border-radius: 12px;
+            padding: 14px 18px; margin-bottom: 16px; font-size: 0.85rem; color: #065f46;
+        }
+        /* ── 보안안내 전용 ── */
+        .g-step-bar {
+            background:linear-gradient(135deg,#4f46e5,#4338ca); border-radius:14px; padding:16px 20px;
+            margin-bottom:24px; display:flex; align-items:flex-end; gap:6px;
+            flex-wrap:wrap; justify-content:center; position:relative; overflow:hidden;
+        }
+        .g-step-bar::after { content:''; position:absolute; top:-30px; right:-30px; width:140px; height:140px; background:rgba(255,255,255,.05); border-radius:50%; pointer-events:none; }
+        .g-step-group { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .g-step-label { font-size:0.72rem; font-weight:600; color:rgba(255,255,255,0.5); letter-spacing:0.3px; white-space:nowrap; transition:color 0.25s; }
+        .g-step-group.g-has-active .g-step-label { color:rgba(255,255,255,0.9); }
+        .g-step-dots { display:flex; gap:3px; }
+        .g-step-divider { width:1px; height:28px; background:rgba(255,255,255,0.1); margin:0 2px; align-self:flex-end; }
+        .g-dot {
+            width:36px; height:36px; border-radius:50%; border:none;
+            background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.45);
+            font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.25s ease;
+            display:flex; align-items:center; justify-content:center; font-family:inherit; position:relative;
+        }
+        .g-dot:hover { background:rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); }
+        .g-dot.g-active { background:#fff; color:var(--accent); box-shadow:0 2px 8px rgba(79,70,229,0.3); }
+        .g-dot.g-done { background:rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); }
+        .g-dot.g-done::after { content:''; position:absolute; width:6px; height:6px; background:#34d399; border-radius:50%; top:2px; right:1px; }
+        .g-panel { display:none; animation:fadeIn 0.3s ease; }
+        .g-panel.g-show { display:block; }
+        .g-ph { margin-bottom:28px; }
+        .g-ph-step { font-size:0.7rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
+        .g-ph h3 { font-size:1.4rem; font-weight:800; letter-spacing:-0.5px; line-height:1.35; }
+        .g-ph p { font-size:0.9rem; color:var(--text-secondary); margin-top:6px; }
+        .g-nav-bar { display:flex; justify-content:space-between; align-items:center; padding:20px 0 0; border-top:1px solid var(--border); margin-top:12px; }
+        .g-nav-btn {
+            padding:10px 20px; border-radius:10px; font-size:0.85rem; font-weight:600;
+            cursor:pointer; border:1px solid var(--border); font-family:inherit; transition:all 0.15s;
+            display:flex; align-items:center; gap:6px; background:#fff; color:#374151;
+        }
+        .g-nav-btn:hover { background:#f9fafb; border-color:#d1d5db; }
+        .g-prev { }
+        .g-next { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .g-next:hover { background:#4338ca; border-color:#4338ca; }
+        .g-nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
+        .g-info { font-size:0.78rem; color:var(--text-muted); }
+        .num-list { counter-reset:nl; list-style:none; padding:0; margin:8px 0; }
+        .num-list li { counter-increment:nl; padding:10px 0 10px 40px; position:relative; border-bottom:1px solid var(--border-light); font-size:0.87rem; }
+        .num-list li:last-child { border-bottom:none; }
+        .num-list li::before { content:counter(nl); position:absolute; left:0; top:9px; width:26px; height:26px; background:var(--accent); color:#fff; border-radius:50%; font-size:0.72rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+        .check-list { list-style:none; padding:0; margin:6px 0; }
+        .check-list li { padding:8px 0 8px 28px; position:relative; font-size:0.87rem; border-bottom:1px solid var(--border-light); }
+        .check-list li:last-child { border-bottom:none; }
+        .check-list li::before { content:'\2713'; position:absolute; left:4px; top:9px; color:var(--success); font-weight:700; font-size:0.85rem; }
+        .x-list { list-style:none; padding:0; margin:6px 0; }
+        .x-list li { padding:8px 0 8px 28px; position:relative; font-size:0.87rem; border-bottom:1px solid var(--border-light); }
+        .x-list li:last-child { border-bottom:none; }
+        .x-list li::before { content:'\2717'; position:absolute; left:4px; top:9px; color:var(--danger); font-weight:700; font-size:0.85rem; }
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+        .flow-card { background:var(--surface); border:none; border-radius:14px; padding:18px 14px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+        .flow-num { font-size:1.5rem; font-weight:800; line-height:1; color:var(--accent); }
+        .flow-label { font-size:0.82rem; font-weight:700; margin-top:6px; }
+        .flow-desc { font-size:0.75rem; color:var(--text-secondary); margin-top:4px; line-height:1.4; }
+        .keypoint { background:linear-gradient(135deg,#f0f4ff 0%,#faf5ff 100%); border:1px solid #ddd6fe; border-radius:14px; padding:20px 24px; margin:16px 0; }
+        .keypoint-label { font-size:0.68rem; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
+        .keypoint p { font-size:0.87rem; }
+        .divider { height:1px; background:var(--border-light); margin:20px 0; }
+        @media(max-width:700px) {
+            .header-inner { flex-direction: column; text-align: center; gap: 10px; }
+            .main { padding: 20px 14px 36px; }
+            .section { padding: 20px; }
+            .form-row { flex-direction: column; }
+            .stat-row { flex-direction: column; }
+            .tbl { font-size: 0.78rem; }
+            .mgr-input { width: 60px; font-size: 0.78rem; }
+            .grid-2, .grid-4 { grid-template-columns:1fr; }
+            .g-step-bar { padding:10px 12px; gap:4px; }
+            .g-step-label { font-size:0.52rem; }
+            .g-dot { width:30px; height:30px; font-size:0.68rem; }
+            .g-step-divider { height:22px; margin:0 1px; }
+        }
+        @media print { .header, .tab-nav { display: none; } .page { display: block !important; } body { background: #fff; } }
+        /* PDF 출력용 */
+        .pdf-wrap { font-family:'Pretendard Variable','Pretendard',-apple-system,sans-serif; color:#1f2937; font-size:13px; line-height:1.6; padding:0; }
+        .pdf-wrap .pdf-header { text-align:center; margin-bottom:24px; border-bottom:2px solid #4f46e5; padding-bottom:16px; }
+        .pdf-wrap .pdf-header h2 { font-size:20px; font-weight:800; margin-bottom:4px; }
+        .pdf-wrap .pdf-header p { font-size:12px; color:#6b7280; }
+        .pdf-wrap .pdf-info { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+        .pdf-wrap .pdf-info-left { flex:1; }
+        .pdf-wrap .pdf-info-left table { border-collapse:collapse; font-size:13px; }
+        .pdf-wrap .pdf-info-left td { padding:4px 12px 4px 0; }
+        .pdf-wrap .pdf-info-left td:first-child { font-weight:600; color:#374151; white-space:nowrap; }
+        .pdf-wrap .pdf-sign-box { text-align:center; border:2px solid #4f46e5; border-radius:10px; padding:14px 24px; min-width:140px; }
+        .pdf-wrap .pdf-sign-label { font-size:11px; color:#6b7280; margin-bottom:6px; }
+        .pdf-wrap .pdf-sign-name { font-size:18px; font-weight:800; color:#1f2937; }
+        .pdf-wrap .pdf-sign-stamp { color:#dc2626; font-weight:800; font-size:16px; }
+        .pdf-wrap .pdf-tbl { width:100%; border-collapse:collapse; margin-bottom:6px; font-size:12px; }
+        .pdf-wrap .pdf-tbl th { background:#f3f4f6; padding:8px 10px; text-align:left; font-weight:600; border:1px solid #e5e7eb; font-size:11px; }
+        .pdf-wrap .pdf-tbl td { padding:7px 10px; border:1px solid #e5e7eb; }
+        .pdf-wrap .pdf-tbl .pdf-cat { background:#eef2ff; font-weight:700; color:#4f46e5; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+        .pdf-wrap .pdf-tbl .pdf-ok { color:#059669; font-weight:700; text-align:center; }
+        .pdf-wrap .pdf-tbl .pdf-no { color:#dc2626; font-weight:700; text-align:center; }
+        .pdf-wrap .pdf-footer { margin-top:20px; text-align:center; font-size:11px; color:#9ca3af; border-top:1px solid #e5e7eb; padding-top:12px; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div>
+            <h1>정보보안 관리</h1>
+            <div class="meta">경영관리팀 &middot; (주)넷폼알앤디</div>
+        </div>
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-page="overview">관리 현황</button>
+            <button class="tab-btn" data-page="guide">지침</button>
+            <button class="tab-btn" data-page="checklist">자가점검</button>
+            <button class="tab-btn" data-page="admin">관리자</button>
+        </nav>
+    </div>
+</header>
+
+<main class="main">
+
+<!-- PAGE 1: 관리 현황 -->
+<div class="page active" id="pg-overview">
+    <div class="page-title" style="position:relative">
+        <h2>경영관리팀은 이렇게 관리합니다</h2>
+        <p>「정보 보안 및 개인정보보호 관리 규정」과 「전사 정보보안 안내」를 기반으로 운영합니다.</p>
+        <button class="mgr-edit-btn" id="btn-mgr-edit">✏️ 담당자 편집</button>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-blue">&#128203;</span> 1. 제도 운영</div>
+        <table class="tbl"><thead><tr><th>업무</th><th>세부 내용</th><th style="width:9%">주기</th><th style="width:14%;white-space:nowrap">근거</th><th style="width:14%;text-align:center">담당자</th></tr></thead>
+        <tbody>
+            <tr><td><strong>규정·지침 검토/개정</strong></td><td>법령·환경 변화 반영 여부 검토, 필요 시 개정 <a href="#" id="btn-download-rule" style="font-size:0.7rem;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:2px 8px;background:var(--accent-light);" download>📎 규정 다운로드</a></td><td>연 1회</td><td>규정 제22조</td><td><input class="mgr-input" data-mgr="1-1" placeholder="미지정"></td></tr>
+            <tr><td><strong>보안 서약서 관리</strong></td><td>신규 입사자 보안 서약서 작성·수령·보관</td><td>입사 시</td><td>규정 제5조①</td><td><input class="mgr-input" data-mgr="1-2" placeholder="미지정"></td></tr>
+            <tr><td><strong>퇴사자 보안 조치</strong></td><td>하이웍스·잔디 접근 권한 회수<br>팀 내 시스템 접속 비밀번호 변경 및 접근 권한 회수 안내 <button onclick="copyExitMail()" style="font-size:0.68rem;color:var(--text-muted);font-weight:500;border:1px solid var(--border);border-radius:6px;padding:2px 8px;background:transparent;cursor:pointer;font-family:inherit;opacity:0.5;" id="btn-exit-mail">📋 회수 안내</button></td><td>퇴사 시</td><td>규정 제8조②</td><td><input class="mgr-input" data-mgr="1-3" placeholder="미지정"></td></tr>
+        </tbody></table>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-warn">&#128272;</span> 2. 등급별 접근 범위</div>
+        <table class="tbl">
+            <thead><tr><th style="width:14%;text-align:left">구분</th><th style="text-align:left">접근 범위</th></tr></thead>
+            <tbody>
+                <tr><td style="text-align:left"><strong>일반 직원</strong></td><td style="text-align:left">본인 수행 업무와 소속 팀 업무에 필요한 범위의 정보 및 협업 수행을 위해 공유받은 정보</td></tr>
+                <tr><td style="text-align:left"><strong>리드</strong></td><td style="text-align:left">소속 팀의 운영 전반에 필요한 정보 및 부서 간 협업·조율 수행에 필요한 정보</td></tr>
+                <tr><td style="text-align:left"><strong>수석</strong></td><td style="text-align:left">조직 단위의 운영 현황, 주요 성과지표 및 의사결정 지원을 위한 관리 정보</td></tr>
+                <tr><td style="text-align:left"><strong>경영진</strong></td><td style="text-align:left">전사 경영관리 및 의사결정에 필요한 전체 정보</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-warn">&#128274;</span> 3. 계정 &amp; 결제 보안 관리</div>
+        <table class="tbl"><thead><tr><th>업무</th><th>세부 내용</th><th style="width:9%">주기</th><th style="width:14%;text-align:center">담당자</th></tr></thead>
+        <tbody>
+            <tr><td><strong>계정 리스트 관리</strong></td><td>구글·메타·광고 등 전사 계정 현황 DB 운영·갱신</td><td>상시</td><td><input class="mgr-input" data-mgr="2-1" placeholder="미지정"></td></tr>
+            <tr><td><strong>비밀번호 변경 주기</strong></td><td><span class="tag tag-r">A등급</span> 결제 연동 3개월<br><span class="tag tag-o">B등급</span> 매출·출고·개인정보 6개월<br><span class="tag tag-b">C등급</span> 그 외 12개월</td><td>등급별</td><td><input class="mgr-input" data-mgr="2-2" placeholder="미지정"></td></tr>
+            <tr><td><strong>2FA 적용 관리</strong></td><td>A등급 계정 2FA 설정 유지 확인</td><td>분기 1회</td><td><input class="mgr-input" data-mgr="2-3" placeholder="미지정"></td></tr>
+            <tr><td><strong>결제 카드 관리</strong></td><td>해외 결제 OFF → 필요 시 ON → 사용 후 즉시 OFF</td><td>상시</td><td><input class="mgr-input" data-mgr="2-4" placeholder="미지정"></td></tr>
+        </tbody></table>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-red">&#128680;</span> 4. 비상연락망 운영</div>
+        <table class="tbl"><thead><tr><th>업무</th><th>세부 내용</th><th style="width:9%">주기</th><th style="width:14%;white-space:nowrap">근거</th><th style="width:14%;text-align:center">담당자</th></tr></thead>
+        <tbody>
+            <tr><td><strong>사고 보고 채널 운영</strong></td><td>접수 → 접근 차단 → 증거 확보 → 후속 조치</td><td>발생 시</td><td>규정 제16·17조</td><td><input class="mgr-input" data-mgr="3-1" placeholder="미지정"></td></tr>
+            <tr><td><strong>비상연락처 최신화</strong></td><td>담당자 변경 시 즉시 업데이트, 전직원 공유</td><td>변경 시</td><td>지침 6단계</td><td><input class="mgr-input" data-mgr="3-2" placeholder="미지정"></td></tr>
+        </tbody></table>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-green">&#128270;</span> 5. 보안 점검 운영 (정기)</div>
+        <table class="tbl"><thead><tr><th>업무</th><th>세부 내용</th><th style="width:9%">주기</th><th style="width:14%;white-space:nowrap">근거</th><th style="width:14%;text-align:center">담당자</th></tr></thead>
+        <tbody>
+            <tr><td><strong>직원 자가점검 체크리스트</strong></td><td>분기별 체크리스트 배포·제출 확인</td><td>분기 1회</td><td>규정 제18조</td><td><input class="mgr-input" data-mgr="4-2" placeholder="미지정"></td></tr>
+        </tbody></table>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-blue">&#127891;</span> 6. 직원 교육 &amp; 안내</div>
+        <table class="tbl"><thead><tr><th>업무</th><th>세부 내용</th><th style="width:9%">주기</th><th style="width:14%;white-space:nowrap">근거</th><th style="width:14%;text-align:center">담당자</th></tr></thead>
+        <tbody>
+            <tr><td><strong>전 임직원 보안 교육</strong></td><td>전사보안안내 기반 정기 교육 (피싱·사고대응 등)</td><td>연 1회+</td><td>규정 제5조②·제19조</td><td><input class="mgr-input" data-mgr="5-1" placeholder="미지정"></td></tr>
+            <tr><td><strong>신규 입사자 교육</strong></td><td>전사보안안내 배포 + 필수 교육 이수</td><td>입사 시</td><td>규정 제19조②</td><td><input class="mgr-input" data-mgr="5-2" placeholder="미지정"></td></tr>
+        </tbody></table>
+    </div>
+    <div class="callout callout-info" style="margin-top:8px">
+        <div class="callout-title">관련 문서</div>
+        「정보 보안 및 개인정보보호 관리 규정」 (일련번호 2-1) | 「전사 정보보안 안내」 (SEC-GL-2026-001)
+    </div>
+</div>
+
+<!-- PAGE 2: 보안안내 -->
+<div class="page" id="pg-guide">
+    <div class="page-title">
+        <h2>전사 정보보안 안내</h2>
+        <p>SEC-GL-2026-001 &middot; 2026.04 시행</p>
+    </div>
+    <nav class="g-step-bar" id="g-nav">
+        <div class="g-step-group g-has-active" data-gg="intro">
+            <div class="g-step-label">안내</div>
+            <div class="g-step-dots"><button class="g-dot g-active" data-gi="0">0</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="html">
+            <div class="g-step-label">HTML 보안</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="1">1</button><button class="g-dot" data-gi="2">2</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="access">
+            <div class="g-step-label">접근권한</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="3">3</button><button class="g-dot" data-gi="4">4</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="fraud">
+            <div class="g-step-label">부정결제</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="5">5</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="phishing">
+            <div class="g-step-label">해킹·피싱</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="6">6</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="incident">
+            <div class="g-step-label">사고대응</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="7">7</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="ai">
+            <div class="g-step-label">AI도구</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="8">8</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="daily">
+            <div class="g-step-label">일상보안</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="9">9</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="privacy">
+            <div class="g-step-label">개인정보</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="10">10</button></div>
+        </div>
+        <div class="g-step-divider"></div>
+        <div class="g-step-group" data-gg="end">
+            <div class="g-step-label">마무리</div>
+            <div class="g-step-dots"><button class="g-dot" data-gi="11">11</button></div>
+        </div>
+    </nav>
+
+    <!-- 0. 시작 -->
+    <div class="g-panel g-show" data-gp="0">
+        <div class="g-ph"><div class="g-ph-step">Intro</div><h3>전사 정보보안 안내</h3><p>우리 회사의 정보를 안전하게 지키기 위한 보안 수칙입니다. 실제 업무 환경에 맞춰 정리했으니, 천천히 읽어주세요.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#9776;</span> 안내서 구성</div>
+            <table class="tbl"><tbody>
+                <tr><td style="width:36px;font-weight:800;color:var(--accent);font-size:1.05rem">1</td><td style="text-align:left"><strong>로컬 HTML 보안</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">PC에서만 쓰는 HTML 파일 점검</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">2</td><td style="text-align:left"><strong>외부 배포 HTML 보안</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">GitHub Pages, 웹호스팅 서비스 점검</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">3</td><td style="text-align:left"><strong>접근 권한 등급</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">직무별 정보 접근 범위</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">4</td><td style="text-align:left"><strong>접근 권한 관리</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">정보 관리 권고 및 운영 유형</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">5</td><td style="text-align:left"><strong>해킹 대응 &amp; 계정 관리</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">실제 사고 사례와 계정 관리 체계</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">6</td><td style="text-align:left"><strong>피싱 메일 대응</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">의심 메일 구별법과 행동 요령</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">7</td><td style="text-align:left"><strong>보안 사고 대응</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">사고 시 행동 순서와 비상 연락처</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">8</td><td style="text-align:left"><strong>에이전트형 AI 보안</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">허용 AI vs 금지 AI 구분</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">9</td><td style="text-align:left"><strong>일상 업무 보안</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">매일 지켜야 할 기본 수칙</span></td></tr>
+                <tr><td style="font-weight:800;color:var(--accent);font-size:1.05rem">10</td><td style="text-align:left"><strong>개인정보 보호</strong><br><span style="color:var(--text-secondary);font-size:0.82rem">개인정보 수집·보관·파기 원칙</span></td></tr>
+            </tbody></table>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-green">&#10003;</span> 적용 대상</div>
+            <p style="font-size:0.9rem"><strong>(주)넷폼알앤디 전 임직원</strong></p>
+            <p style="font-size:0.83rem;color:var(--text-secondary);margin-top:4px">정규직, 계약직, 인턴 포함<br>회사 PC, 업무 계정, 웹서비스, 클라우드 서비스 모두 해당</p>
+        </div>
+    </div>
+
+    <!-- 1. 로컬 HTML -->
+    <div class="g-panel" data-gp="1">
+        <div class="g-ph"><div class="g-ph-step">Step 02</div><h3>외부 공유없이 로컬 PC에서만 쓰는 HTML, 안전한가요?</h3><p>견적서 양식, 내부 업무 도구 등 로컬에서만 여는 HTML도 간단한 점검이 필요합니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128269;</span> 2가지만 확인하세요</div>
+            <table class="tbl">
+                <thead><tr><th style="width:5%">#</th><th style="width:48%">점검 항목</th><th>확인 방법</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td>알 수 없는 외부 URL로 데이터를 보내고 있지 않은지</td><td><code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.82rem">Ctrl+F</code> &rarr; <code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.82rem">http</code> 검색, 모르는 주소 제거</td></tr>
+                    <tr><td><strong>2</strong></td><td>비밀번호나 API 키가 코드에 그대로 적혀 있지 않은지</td><td><code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.82rem">Ctrl+F</code> &rarr; <code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.82rem">password</code>, <code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.82rem">key</code> 검색</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="keypoint"><div class="keypoint-label">Key Point</div><p>로컬 HTML이라도 외부에서 받은 템플릿이나 AI로 생성한 코드에는 외부 전송 코드가 숨어 있을 수 있습니다. <strong>http로 시작하는 주소</strong>가 있는지 한 번만 확인해 주세요.</p></div>
+    </div>
+
+    <!-- 2. 외부 배포 -->
+    <div class="g-panel" data-gp="2">
+        <div class="g-ph"><div class="g-ph-step">Step 03</div><h3>외부에 올리는 서비스, 이것만은 꼭!</h3><p>GitHub Pages, 웹호스팅 등 외부 서버에 올리는 HTML/JS 서비스의 필수 보안 점검 항목입니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-red">&#9888;</span> 배포 전 필수 6가지 점검</div>
+            <div class="callout callout-success"><div class="callout-title">AI로 간편하게 점검하기</div>경영관리팀에서 배포하는 보안 점검용 md 파일을 AI에 첨부하면, 주요 보안 이슈를 빠르게 점검할 수 있습니다.</div>
+            <table class="tbl">
+                <thead><tr><th style="width:5%">#</th><th style="width:30%">점검 항목</th><th>미점검 시 위험</th><th style="width:18%">확인 방법</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td>비밀번호 해시(SHA-256) 저장</td><td>DB 유출 시 PW 전부 노출</td><td><code>sha256</code> 검색</td></tr>
+                    <tr><td><strong>2</strong></td><td>Firebase Security Rules 설정</td><td>API 키로 누구든 데이터 삭제 가능</td><td>Firebase 콘솔 &gt; 규칙</td></tr>
+                    <tr><td><strong>3</strong></td><td>민감 API 키 코드 노출</td><td>결제 키 노출 시 무단 결제</td><td><code>key</code>, <code>secret</code> 검색</td></tr>
+                    <tr><td><strong>4</strong></td><td>입력값 이스케이프 (XSS 방지)</td><td>악성 코드가 사용자 화면에서 실행</td><td><code>textContent</code> 확인</td></tr>
+                    <tr><td><strong>5</strong></td><td>Firebase 컬렉션 접두사</td><td>"users" 등 이름은 공격 대상</td><td>서비스명-기능 형태</td></tr>
+                    <tr><td><strong>6</strong></td><td>F12 개발자도구 우회 방지</td><td>콘솔에서 인증 우회 가능</td><td>인증 체크 코드</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-warn">&#128274;</span> GitHub 소스코드 공개 문제</div>
+            <div class="callout callout-danger" style="margin-top:0"><div class="callout-title">현재 상태</div>GitHub 무료(Public)로 배포 중이라 소스코드가 누구에게나 공개되어 있습니다.</div>
+            <div class="grid-2" style="margin:16px 0">
+                <div><p style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px">조치</p><p style="font-size:0.87rem">GitHub Pro 업그레이드 &rarr; <strong>Private 모드</strong> 전환</p></div>
+                <div><p style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px">효과</p><p style="font-size:0.87rem">소스코드 외부 노출 완전 차단 (Pages 배포 정상 유지)</p></div>
+            </div>
+            <div class="divider"></div>
+            <p style="font-size:0.85rem;font-weight:600;margin-bottom:8px">전환 방법</p>
+            <ol class="num-list">
+                <li>GitHub.com &rarr; Settings &rarr; Billing &rarr; <strong>Upgrade to Pro</strong></li>
+                <li>리포지토리 &rarr; Settings &rarr; Danger Zone &rarr; <strong>Private 전환</strong></li>
+                <li>Pages에서 배포 정상 동작 확인</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- 3. 접근 권한 등급 -->
+    <div class="g-panel" data-gp="3">
+        <div class="g-ph"><div class="g-ph-step">Step 04</div><h3>접근 권한 등급</h3><p>정보 접근은 최소 권한 원칙에 따라 차등 부여됩니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-warn">&#128272;</span> 등급별 접근 범위</div>
+            <table class="tbl">
+                <thead><tr><th style="width:14%;text-align:left">구분</th><th style="text-align:left">접근 범위</th></tr></thead>
+                <tbody>
+                    <tr><td style="text-align:left"><strong>일반 직원</strong></td><td style="text-align:left">본인 수행 업무와 소속 팀 업무에 필요한 범위의 정보 및 협업 수행을 위해 공유받은 정보</td></tr>
+                    <tr><td style="text-align:left"><strong>리드</strong></td><td style="text-align:left">소속 팀의 운영 전반에 필요한 정보 및 부서 간 협업·조율 수행에 필요한 정보</td></tr>
+                    <tr><td style="text-align:left"><strong>수석</strong></td><td style="text-align:left">조직 단위의 운영 현황, 주요 성과지표 및 의사결정 지원을 위한 관리 정보</td></tr>
+                    <tr><td style="text-align:left"><strong>경영진</strong></td><td style="text-align:left">전사 경영관리 및 의사결정에 필요한 전체 정보</td></tr>
+                </tbody>
+            </table>
+            <div class="callout callout-warn" style="margin-top:16px">
+                <div class="callout-title">최소 권한 원칙</div>
+                전 정보에 대한 접근 권한은 최소 권한 원칙에 따라 부여하며, 각 구성원의 직무, 담당 업무, 책임 범위, 협업 필요성 및 정보의 중요도를 종합적으로 고려하여 차등 관리한다.
+            </div>
+        </div>
+    </div>
+
+    <!-- 3-1. 접근 권한 관리 -->
+    <div class="g-panel" data-gp="4">
+        <div class="g-ph"><div class="g-ph-step">Step 05</div><h3>접근 권한 관리</h3><p>중요 정보의 접근 권한을 어떻게 운영하는지 안내합니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128203;</span> 접근 권한 관리 권고</div>
+            <p style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:12px">다음 기준에 따라 정보를 관리해 주세요.</p>
+            <ol class="num-list">
+                <li><strong>정보 구분</strong><br><span style="color:var(--text-secondary)">접근 제한이 필요한 정보는 일반 정보와 구분합니다.</span></li>
+                <li><strong>보호조치 적용</strong><br><span style="color:var(--text-secondary)">비밀번호 설정 등 필요한 보호조치를 적용합니다.</span></li>
+                <li><strong>공유 범위 제한</strong><br><span style="color:var(--text-secondary)">업무상 필요한 인원에게만 공유합니다.</span></li>
+            </ol>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128203;</span> 접근 권한 운영 유형</div>
+            <div class="grid-2" style="gap:16px">
+                <!-- 전사 공용형 카드 -->
+                <div style="border:1.5px solid #818cf8;border-radius:var(--radius);overflow:hidden;background:#fff">
+                    <div style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px">
+                        <span style="font-size:1.3rem">🏢</span>
+                        <div>
+                            <div style="font-size:0.92rem;font-weight:800;letter-spacing:-0.02em">전사 공용형</div>
+                            <div style="font-size:0.72rem;opacity:0.85;margin-top:2px">개인별 계정 부여 방식</div>
+                        </div>
+                    </div>
+                    <div style="padding:16px 18px">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="background:var(--accent-light);color:var(--accent);font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px">적용 대상</span></div>
+                        <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 14px;line-height:1.6">여러 부서 또는 전사적으로 공유되며,<br>다수가 지속적으로 확인해야 하는 중요 정보</p>
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="background:var(--accent-light);color:var(--accent);font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px">운영 방식</span></div>
+                        <ul style="font-size:0.82rem;margin:0 0 14px;padding-left:18px;color:var(--text);line-height:1.8">
+                            <li>개인별 계정을 부여하여 접근 권한 관리</li>
+                            <li>인력 변동 시 해당 계정 삭제 또는 권한 회수</li>
+                            <li>업무 혼선 방지 및 접근 이력 구분 관리</li>
+                        </ul>
+                        <div style="background:#f0f0ff;border-radius:8px;padding:10px 14px;display:flex;align-items:flex-start;gap:8px">
+                            <span style="font-size:0.85rem;margin-top:1px">💡</span>
+                            <p style="font-size:0.78rem;color:var(--accent);font-weight:600;margin:0;line-height:1.5">열람 인원 많음 · 인력 변동 잦음 · 업무 연속성 중요</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 팀 제한형 카드 -->
+                <div style="border:1.5px solid #34d399;border-radius:var(--radius);overflow:hidden;background:#fff">
+                    <div style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px">
+                        <span style="font-size:1.3rem">🔒</span>
+                        <div>
+                            <div style="font-size:0.92rem;font-weight:800;letter-spacing:-0.02em">팀 제한형</div>
+                            <div style="font-size:0.72rem;opacity:0.85;margin-top:2px">비밀번호 공유 방식</div>
+                        </div>
+                    </div>
+                    <div style="padding:16px 18px">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="background:var(--success-light);color:var(--success);font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px">적용 대상</span></div>
+                        <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 14px;line-height:1.6">특정 팀 또는 소수 인원만 공유하면 되는<br>중요 정보</p>
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="background:var(--success-light);color:var(--success);font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px">운영 방식</span></div>
+                        <ul style="font-size:0.82rem;margin:0 0 14px;padding-left:18px;color:var(--text);line-height:1.8">
+                            <li>접근 필요 인원에게만 비밀번호 부여</li>
+                            <li>인사 변동 시 비밀번호 즉시 변경</li>
+                            <li>소규모 공유 시 효율적 운영 가능</li>
+                        </ul>
+                        <div style="background:#ecfdf5;border-radius:8px;padding:10px 14px;display:flex;align-items:flex-start;gap:8px">
+                            <span style="font-size:0.85rem;margin-top:1px">💡</span>
+                            <p style="font-size:0.78rem;color:var(--success);font-weight:600;margin:0;line-height:1.5">열람 인원 적음 · 팀 내 제한 · 변경 영향 범위 작음</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="keypoint" style="margin-top:16px">
+                <div class="keypoint-label">운영 원칙</div>
+                <p>중요 정보는 일률적으로 관리하지 않고, <strong>열람 인원 규모</strong>, <strong>인력 변동 가능성</strong>, <strong>비밀번호 변경 시 영향 범위</strong>를 고려하여 전사 공용형 또는 팀 제한형 중 적절한 방법으로 운영합니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 부정결제 -->
+    <div class="g-panel" data-gp="5">
+        <div class="g-ph"><div class="g-ph-step">Step 06</div><h3>해킹, 실제로 일어났습니다</h3><p>우리 회사에서 발생한 사고 사례와, 앞으로의 계정 관리 방식을 안내합니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-red">&#9888;</span> 사고 개요</div>
+            <div class="callout callout-danger" style="margin-top:0"><div class="callout-title">실제 사례</div>구글계정 해킹 &rarr; 메타(Facebook) 광고비 <strong>약 600만 원</strong> 해외 부정 결제</div>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128272;</span> 계정 관리 체계 변경</div>
+            <p style="font-size:0.87rem;color:var(--text-secondary);margin-bottom:14px">부서별 개별 관리 &rarr; <strong>경영관리팀 중앙 관리</strong>로 전환합니다.</p>
+            <div class="grid-2">
+                <div class="callout callout-info" style="margin:0"><div class="callout-title">계정 관리 중앙화</div>계정 생성 &rarr; 경영관리팀에 요청<br>퇴사 시 비밀번호 즉시 변경<br>계정별 담당자/인증단말기/PW를 DB화</div>
+                <div class="callout callout-info" style="margin:0"><div class="callout-title">카드 결제 분리</div>국내 전용 / 해외 전용 카드 분리<br>해외 카드는 평소 차단, 필요 시만 허용<br>결제 후 즉시 차단으로 재전환</div>
+            </div>
+            <div class="divider"></div>
+            <p style="font-size:0.85rem;font-weight:600;margin-bottom:8px">보안 등급별 관리 기준</p>
+            <table class="tbl">
+                <thead><tr><th>등급</th><th>대상</th><th>PW 변경</th><th>핵심</th></tr></thead>
+                <tbody>
+                    <tr><td><span class="tag tag-r">A등급</span></td><td>결제 연동 (메타, 구글 광고 등)</td><td><strong>3개월</strong></td><td>2FA 필수</td></tr>
+                    <tr><td><span class="tag tag-o">B등급</span></td><td>매출 / 출고 / 개인정보</td><td><strong>6개월</strong></td><td></td></tr>
+                    <tr><td><span class="tag tag-b">C등급</span></td><td>그 외</td><td><strong>12개월</strong></td><td></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 6. 피싱 메일 -->
+    <div class="g-panel" data-gp="6">
+        <div class="g-ph"><div class="g-ph-step">Step 07</div><h3>이 메일, 진짜일까요?</h3><p>피싱 메일을 구별하는 방법과, 받았을 때 어떻게 해야 하는지 안내합니다.</p></div>
+        <div class="callout callout-danger"><div class="callout-title">특히 메타(Facebook) 관련 메일을 주의하세요</div>'계정 제한', '보안 문제', '광고 중단' 내용의 메일은 피싱 가능성이 매우 높습니다. 직접 대응하지 말고 <strong>경영관리팀에 먼저 공유</strong>하세요.</div>
+        <div class="grid-2">
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-red">&#9888;</span> 이런 메일은 의심하세요</div>
+                <ul class="x-list">
+                    <li>"계정이 제한됩니다", "즉시 확인하세요" 등 <strong>급한 문구</strong></li>
+                    <li>"광고가 중단되었습니다" 등 <strong>업무 사칭</strong></li>
+                    <li>공식이 아닌 <strong>비슷한 발신자 주소</strong><br><span style="color:var(--text-muted);font-size:0.8rem">예: @faceb00k-support.com</span></li>
+                    <li>"거래명세서", "세금계산서" 등 <strong>업종 타겟형</strong></li>
+                    <li>첨부파일이 .exe .zip .scr 등 <strong>실행 파일</strong></li>
+                </ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-green">&#10003;</span> 이렇게 대응하세요</div>
+                <ol class="num-list">
+                    <li>메일 속 <strong>링크 클릭 금지</strong>, 첨부파일도 열지 마세요</li>
+                    <li><strong>경영관리팀에 먼저 전달</strong> (잔디 또는 유선)</li>
+                    <li>확인 필요 시 메일 링크가 아닌 <strong>사이트에 직접 접속</strong></li>
+                    <li>이미 클릭했다면 <strong>즉시 경영관리팀 연락</strong></li>
+                    <li>정보를 입력했다면 <strong>비밀번호 즉시 변경</strong></li>
+                </ol>
+            </div>
+        </div>
+        <div class="keypoint" style="margin-top:16px"><div class="keypoint-label">간단 판별법</div><p>진짜 서비스는 메일로 비밀번호나 개인정보를 요구하지 않습니다.<br><strong>"지금 당장 안 하면 큰일난다"는 식일수록 피싱 확률이 높습니다.</strong></p></div>
+    </div>
+
+    <!-- 6. 사고 대응 -->
+    <div class="g-panel" data-gp="7">
+        <div class="g-ph"><div class="g-ph-step">Step 08</div><h3>보안 사고가 발생했다면?</h3><p>당황하지 마세요. 순서대로 행동하면 됩니다. 빠른 보고가 피해를 줄입니다.</p></div>
+        <div class="grid-4">
+            <div class="flow-card"><div class="flow-num" style="color:var(--danger)">1</div><div class="flow-label">중단</div><div class="flow-desc">추가 조작을<br>멈추세요</div></div>
+            <div class="flow-card"><div class="flow-num" style="color:var(--warn)">2</div><div class="flow-label">보고</div><div class="flow-desc">경영관리팀에<br>즉시 알리세요</div></div>
+            <div class="flow-card"><div class="flow-num" style="color:var(--accent)">3</div><div class="flow-label">보존</div><div class="flow-desc">화면 캡처 등<br>증거를 남기세요</div></div>
+            <div class="flow-card"><div class="flow-num" style="color:var(--success)">4</div><div class="flow-label">대기</div><div class="flow-desc">안내에 따라<br>행동하세요</div></div>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-warn">&#128679;</span> 상황별 초동 대응</div>
+            <table class="tbl">
+                <thead><tr><th style="width:35%">상황</th><th>이렇게 하세요</th></tr></thead>
+                <tbody>
+                    <tr><td>PC 먹통 + 금전 요구 <span class="tag tag-r">랜섬웨어</span></td><td>랜선/Wi-Fi 끄기 &rarr; 보고. <strong>전원은 끄지 마세요!</strong></td></tr>
+                    <tr><td>피싱 링크 클릭 후 정보 입력 <span class="tag tag-o">피싱</span></td><td>비밀번호 즉시 변경 &rarr; 보고</td></tr>
+                    <tr><td>이상 광고/결제 발견 <span class="tag tag-o">계정 탈취</span></td><td>현 상황 캡처 &rarr; 보고</td></tr>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-red">&#128222;</span> 비상 연락처</div>
+            <table class="tbl">
+                <thead><tr><th>역할</th><th>담당자</th><th>연락처</th><th>보고 시점</th></tr></thead>
+                <tbody>
+                    <tr><td>보안 담당 (1차)</td><td>최영옥</td><td>010-9045-8201</td><td>사고 인지 즉시</td></tr>
+                    <tr><td>경영관리팀 리드</td><td>주유진</td><td>010-6352-9896</td><td>1차 보고 후</td></tr>
+                    <tr><td>경영관리팀 수석</td><td>신나영</td><td>010-7344-0919</td><td>긴급 사고 시</td></tr>
+                    <tr><td colspan="4" style="font-size:0.82rem;color:var(--text-secondary)">외부 신고: 개인정보보호위원회 <strong>118</strong> &nbsp;/&nbsp; 경찰 사이버수사대 <strong>182</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 7. AI 보안 -->
+    <div class="g-panel" data-gp="8">
+        <div class="g-ph"><div class="g-ph-step">Step 09</div><h3>AI 도구, 뭐가 되고 뭐가 안 되나요?</h3><p>같은 AI라도 작동 방식이 다릅니다. 안전한 것과 위험한 것을 구분해 드립니다.</p></div>
+        <div class="grid-2">
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-green">&#10003;</span> Claude / ChatGPT (사용 가능)</div>
+                <ul class="check-list"><li>내가 입력한 내용만 AI가 처리</li><li>AI가 PC 파일을 마음대로 못 열어봄</li><li>뭘 보내는지 내가 통제 가능</li></ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-red">&#9888;</span> 오픈클로 등 에이전트형 AI (금지)</div>
+                <ul class="x-list"><li>PC 전체 접근 권한 보유</li><li>파일 열기/수정/삭제/전송 가능</li><li>뭐가 밖으로 나가는지 알 수 없음</li><li>고객 데이터, 단가, 계약서 유출 위험</li></ul>
+            </div>
+        </div>
+        <div class="section" style="margin-top:16px">
+            <div class="section-title"><span class="badge badge-blue">&#128203;</span> AI 도구별 허용 기준</div>
+            <table class="tbl">
+                <thead><tr><th>도구</th><th>허용</th><th>주의사항</th></tr></thead>
+                <tbody>
+                    <tr><td>Claude (웹/앱/Code)</td><td><span class="tag tag-g">사용 가능</span></td><td>외부 배포 시 경영관리팀 배포 보안 MD 점검 필수</td></tr>
+                    <tr><td>ChatGPT</td><td><span class="tag tag-g">사용 가능</span></td><td>〃</td></tr>
+                    <tr><td>Codex (코드 생성)</td><td><span class="tag tag-g">사용 가능</span></td><td>〃</td></tr>
+                    <tr><td>오픈클로 등 에이전트형 AI</td><td><span class="tag tag-r">사용 금지</span></td><td>로컬PC 사용 금지, 맥미니 권장</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8. 일상 보안 -->
+    <div class="g-panel" data-gp="9">
+        <div class="g-ph"><div class="g-ph-step">Step 10</div><h3>매일 지켜주세요</h3><p>어렵지 않습니다. 몇 가지 습관만 들이면 대부분의 위협을 막을 수 있습니다.</p></div>
+        <div class="grid-2">
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-blue">&#128273;</span> 비밀번호</div>
+                <ul class="check-list"><li><strong>12자 이상</strong>, 영대/소+숫자+특수문자</li><li>서비스마다 <strong>다른 비밀번호</strong></li><li>타인에게 <strong>알려주지 않기</strong></li></ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-green">&#128187;</span> PC 관리</div>
+                <ul class="check-list"><li>자리 비울 때 <strong>화면 잠금</strong> <code style="background:var(--border-light);padding:2px 6px;border-radius:3px;font-size:0.8rem">Win+L</code></li><li>보안 업데이트 <strong>미루지 않기</strong></li><li>백신 프로그램 <strong>끄지 않기</strong></li><li>검증되지 않은 프로그램 <strong>설치 금지</strong></li></ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-warn">&#128193;</span> 파일 관리</div>
+                <ul class="check-list"><li><strong>회사 지정 폴더</strong>에 저장</li><li>개인 클라우드에 <strong>업무 파일 금지</strong></li><li>주기적으로 파일 <strong>백업</strong></li></ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-red">&#128172;</span> 메신저</div>
+                <ul class="check-list"><li>중요 자료 외부 전송 시, <strong>파일에 비밀번호 설정</strong> 후 전달</li></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. 개인정보 -->
+    <div class="g-panel" data-gp="10">
+        <div class="g-ph"><div class="g-ph-step">Step 11</div><h3>개인정보, 이렇게 다뤄주세요</h3><p>고객·거래처·임직원의 개인정보는 법적 보호 대상입니다. 기본 원칙만 지켜주세요.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128203;</span> 개인정보란?</div>
+            <p style="font-size:0.87rem;line-height:1.8">살아있는 개인을 식별할 수 있는 모든 정보를 말합니다.<br><strong>이름, 연락처, 이메일, 주민등록번호, 주소, 계좌번호</strong> 등이 모두 해당됩니다.</p>
+        </div>
+        <div class="grid-2">
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-green">&#10003;</span> 이렇게 하세요</div>
+                <ul class="check-list"><li>개인정보는 <strong>업무 목적 범위 내</strong>에서만 열람하세요</li><li>수집할 때는 <strong>최소한만</strong>, 반드시 <strong>동의</strong>를 받으세요</li><li>보유기간이 끝나면 <strong>즉시 파기</strong>하세요</li><li>개인정보가 담긴 문서는 <strong>파쇄</strong>, 전자파일은 <strong>완전 삭제</strong></li><li>퇴근 시 책상 위 개인정보 문서 <strong>정리·보관</strong> (클린데스크)</li></ul>
+            </div>
+            <div class="section" style="margin-bottom:0">
+                <div class="section-title"><span class="badge badge-red">&#9888;</span> 이런 건 안 됩니다</div>
+                <ul class="x-list"><li>업무 외 목적으로 개인정보 <strong>열람·복사</strong></li><li>개인정보를 <strong>개인 PC·클라우드</strong>에 저장</li><li>동의 없이 <strong>제3자에게 제공</strong></li><li>개인정보 포함 문서를 <strong>방치·미파쇄</strong></li><li>AI 도구에 <strong>개인정보 입력</strong></li></ul>
+            </div>
+        </div>
+        <div class="section" style="margin-top:16px">
+            <div class="section-title"><span class="badge badge-warn">&#128274;</span> 외부 제공·위탁 시</div>
+            <table class="tbl">
+                <thead><tr><th style="width:30%">상황</th><th>원칙</th></tr></thead>
+                <tbody>
+                    <tr><td>거래처에 개인정보 제공</td><td>관련 법령 준수 + <strong>정보주체 동의</strong> 필수</td></tr>
+                    <tr><td>외부 업체에 처리 위탁</td><td>위탁 계약 시 <strong>보호 조치 확보</strong> 필수</td></tr>
+                    <tr><td>보유기간 경과</td><td><strong>지체 없이 파기</strong> (전자파일 복구불가 삭제, 문서 파쇄)</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 9. 접근 권한 등급 -->
+    <!-- 11. 마무리 -->
+    <div class="g-panel" data-gp="11">
+
+        <div class="g-ph"><div class="g-ph-step">Finish</div><h3>끝까지 읽어주셔서 감사합니다</h3><p>보안은 거창한 것이 아닙니다. 작은 습관 하나가 회사 전체를 지킵니다.</p></div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128172;</span> 기억해 주세요</div>
+            <p style="font-size:0.92rem;line-height:1.9">이 안내서에서 다룬 내용은 모두 <strong>실제 우리 회사에서 일어났거나, 일어날 수 있는 일</strong>들입니다.<br>복잡한 보안 기술을 알 필요는 없습니다. 다만 아래 세 가지만 꼭 지켜주세요.</p>
+            <div class="grid-2" style="margin-top:16px">
+                <div class="callout callout-info" style="margin:0"><div class="callout-title">&#10102; 이상하면 바로 알려주세요</div>모르는 결제, 수상한 메일, 이상한 로그인 알림 &mdash;<br><strong>혼자 판단하지 말고 경영관리팀에 먼저 공유</strong>해 주세요.<br>빠른 보고 한 번이 수백만 원의 피해를 막습니다.</div>
+                <div class="callout callout-info" style="margin:0"><div class="callout-title">&#10103; 비밀번호를 소중히 다뤄주세요</div>12자 이상, 서비스마다 다르게, 누구에게도 알려주지 않기.<br><strong>비밀번호 하나만 잘 관리해도</strong> 대부분의 해킹을 막을 수 있습니다.</div>
+            </div>
+            <div class="callout callout-success" style="margin-top:12px"><div class="callout-title">&#10104; 내가 보안의 시작입니다</div>아무리 좋은 시스템이 있어도, 결국 <strong>사람이 클릭하고 사람이 입력</strong>합니다.<br>한 사람 한 사람의 주의가 모여 회사 전체의 보안이 됩니다.<br><strong>나 하나쯤이 아니라, 나 하나부터.</strong></div>
+        </div>
+        <div class="section">
+            <div class="section-title"><span class="badge badge-blue">&#128196;</span> 운영 안내</div>
+            <table class="tbl"><tbody>
+                <tr><td style="width:28%;font-weight:600">시행일</td><td>2026년 4월</td></tr>
+                <tr><td style="font-weight:600">담당 부서</td><td>경영관리팀</td></tr>
+            </tbody></table>
+            <div style="text-align:center;margin-top:20px">
+                <button class="btn btn-primary" id="btn-go-checklist" style="padding:12px 32px;font-size:0.95rem">자가점검 시작하기 &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="g-nav-bar">
+        <button class="g-nav-btn g-prev" id="gPrev" disabled>&larr; 이전</button>
+        <span class="g-info" id="gInfo">1 / 11</span>
+        <button class="g-nav-btn g-next" id="gNext">다음 &rarr;</button>
+    </div>
+</div>
+
+<!-- PAGE 3: 자가점검 -->
+<div class="page" id="pg-checklist">
+    <div class="page-title">
+        <h2>정보보안 자가점검 체크리스트</h2>
+        <p>분기별 1회, 아래 항목을 확인하고 제출해 주세요.</p>
+    </div>
+    <div class="section">
+        <div class="section-title"><span class="badge badge-blue">&#128100;</span> 기본 정보</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">분기 선택</label>
+                <select id="cl-quarter"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">소속 팀</label>
+                <select id="cl-team"><option value="">-- 팀 선택 --</option></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">이름</label>
+                <select id="cl-name"><option value="">-- 이름 선택 --</option></select>
+            </div>
+        </div>
+        <div id="cl-already" class="callout callout-warn" style="display:none;margin-top:12px">
+            <div class="callout-title">이미 제출됨</div>
+            <span id="cl-already-msg"></span>
+        </div>
+    </div>
+    <div class="section" id="cl-form-area">
+        <div class="section-title"><span class="badge badge-green">&#9745;</span> 점검 항목</div>
+        <div class="check-cat">1. 계정 / 비밀번호</div>
+        <div class="check-item"><input type="checkbox" id="q1"><label for="q1">비밀번호를 타인과 공유하지 않았다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q2"><label for="q2">동일 비밀번호를 여러 서비스에 사용하지 않는다.</label></div>
+        <div class="check-cat">2. PC / 업무환경</div>
+        <div class="check-item"><input type="checkbox" id="q3"><label for="q3">자리 이탈 시 화면 잠금을 사용한다. (Win + L)</label></div>
+        <div class="check-item"><input type="checkbox" id="q4"><label for="q4">보안 업데이트를 미루지 않았다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q5"><label for="q5">검증되지 않은 프로그램을 설치하지 않았다.</label></div>
+        <div class="check-cat">3. 파일 / 데이터 관리</div>
+        <div class="check-item"><input type="checkbox" id="q6"><label for="q6">업무 파일을 개인 클라우드에 저장하지 않는다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q7"><label for="q7">중요 파일은 지정된 위치에 저장한다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q8"><label for="q8">외부 전송 시 파일 보안을 확인한다.</label></div>
+        <div class="check-cat">4. 메일 / 피싱 대응</div>
+        <div class="check-item"><input type="checkbox" id="q9"><label for="q9">의심스러운 메일 링크를 클릭하지 않는다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q10"><label for="q10">첨부파일 실행 전 확인한다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q11"><label for="q11">이상 메일은 경영관리팀에 공유한다.</label></div>
+        <div class="check-cat">5. 웹 / 서비스 사용</div>
+        <div class="check-item"><input type="checkbox" id="q12"><label for="q12">외부 배포 전 보안 점검을 수행했다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q13"><label for="q13">API 키, 비밀번호를 코드에 저장하지 않았다.</label></div>
+        <div class="check-cat">6. 접근 권한 관리</div>
+        <div class="check-item"><input type="checkbox" id="q-ac1"><label for="q-ac1">업무상 불필요한 공유 문서·폴더 접근 권한을 정리했다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q-ac2"><label for="q-ac2">퇴사·부서이동자의 공유 권한이 회수되었는지 확인했다.</label></div>
+        <div class="check-cat">7. AI 도구 사용</div>
+        <div class="check-item"><input type="checkbox" id="q14"><label for="q14">허용된 AI 도구만 사용한다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q15"><label for="q15">개인정보 및 기밀정보를 입력하지 않는다.</label></div>
+        <div class="check-cat">8. 사고 대응</div>
+        <div class="check-item"><input type="checkbox" id="q16"><label for="q16">이상 징후 발견 시 즉시 공유한다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q17"><label for="q17">문제 발생 시 혼자 해결하려 하지 않는다.</label></div>
+    </div>
+    <div class="sign-area">
+        <div class="sign-date" id="sign-date-display"></div>
+        <div style="text-align:center;font-size:0.85rem;color:var(--text-secondary);margin-bottom:14px">
+            위 항목을 확인하였으며, 정보보안 수칙을 성실히 이행하겠습니다.
+        </div>
+        <div class="sign-input-row">
+            <input type="text" id="sign-name" placeholder="이름 입력" readonly>
+            <span class="sign-stamp">(인)</span>
+        </div>
+        <div class="sign-pad-wrap">
+            <div class="sign-pad-label">서명란 (아래에 서명해 주세요)</div>
+            <div class="sign-pad-box" id="sign-pad-box">
+                <canvas class="sign-pad-canvas" id="sign-canvas" width="320" height="120"></canvas>
+                <div class="sign-pad-placeholder" id="sign-placeholder">여기에 서명하세요</div>
+            </div>
+            <div class="sign-pad-actions">
+                <button type="button" id="sign-clear-btn">지우기</button>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+        <button class="btn btn-primary" id="btn-submit" disabled>체크리스트 제출</button>
+        <p id="submit-hint" style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">팀과 이름을 선택하면 제출할 수 있습니다.</p>
+    </div>
+</div>
+
+<!-- PAGE 3: 관리자 -->
+<div class="page" id="pg-admin">
+    <div id="admin-lock" class="admin-lock">
+        <div style="font-size:2.5rem;margin-bottom:12px">&#128274;</div>
+        <p>관리자 비밀번호를 입력하세요</p>
+        <div style="display:flex;gap:8px;justify-content:center">
+            <input type="password" id="admin-pw" placeholder="비밀번호">
+            <button class="btn btn-primary btn-sm" id="admin-login">확인</button>
+        </div>
+    </div>
+    <div id="admin-content" style="display:none">
+        <div class="page-title">
+            <h2>관리자 페이지</h2>
+            <p>조직도 관리 및 분기별 제출 현황을 확인합니다.</p>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+            <button class="btn btn-primary admin-sub" data-sub="status">제출 현황</button>
+            <button class="btn btn-outline admin-sub" data-sub="org">조직도 관리</button>
+            <button class="btn btn-outline admin-sub" data-sub="settings">설정</button>
+        </div>
+
+        <div class="admin-panel" id="sub-status">
+            <div class="quarter-select">
+                <label class="form-label" style="margin:0">분기:</label>
+                <select id="admin-quarter"></select>
+                <button class="btn btn-outline btn-sm" id="btn-download-all">전체 다운로드 (PDF)</button>
+            </div>
+            <div class="stat-row" id="stat-summary"></div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-green">&#9745;</span> 제출 완료</div>
+                <div class="status-grid" id="stat-done"></div>
+            </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-red">&#9744;</span> 미제출</div>
+                <div class="status-grid" id="stat-pending"></div>
+                <div style="margin-top:12px">
+                    <button class="btn btn-outline btn-sm" id="btn-download-pending">미제출자 명단 다운로드</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-panel" id="sub-org" style="display:none">
+            <div class="quarter-select">
+                <label class="form-label" style="margin:0">분기:</label>
+                <select id="org-quarter"></select>
+                <button class="btn btn-outline btn-sm" id="btn-copy-org">이전 분기에서 복사</button>
+            </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-blue">&#128196;</span> 조직도 HTML 업로드</div>
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">&#128194;</div>
+                    <div style="font-weight:700;font-size:0.9rem">조직도 HTML 파일을 드래그하거나 클릭하여 업로드</div>
+                    <p>조직도 페이지에서 다운받은 .html 파일을 업로드하면 팀/인원이 자동으로 반영됩니다.</p>
+                    <input type="file" id="org-file-input" accept=".html,.htm" style="display:none">
+                </div>
+                <div id="upload-result" style="display:none"></div>
+            </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-blue">&#127970;</span> 팀/인원 관리</div>
+                <div id="org-teams"></div>
+                <div style="margin-top:12px">
+                    <div class="org-input-row">
+                        <input type="text" id="new-team-name" placeholder="새 팀 이름">
+                        <button class="btn btn-outline btn-sm" id="btn-add-team">팀 추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-panel" id="sub-settings" style="display:none">
+            <div class="section">
+                <div class="section-title"><span class="badge badge-warn">&#128274;</span> 비밀번호 변경</div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">현재 비밀번호</label><input type="password" id="set-old-pw"></div>
+                    <div class="form-group"><label class="form-label">새 비밀번호</label><input type="password" id="set-new-pw"></div>
+                    <div class="form-group" style="align-self:end"><button class="btn btn-primary btn-sm" id="btn-change-pw">변경</button></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-red">&#128465;</span> 데이터 관리</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">해당 분기의 제출 데이터를 모두 삭제합니다.</p>
+                <div class="form-row">
+                    <select id="reset-quarter"></select>
+                    <button class="btn btn-danger btn-sm" id="btn-reset">해당 분기 초기화</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="mail-modal">
+    <div class="modal-box">
+        <div class="modal-header"><h3>퇴사자 보안 조치 안내 메일</h3><button class="modal-close" onclick="closeMailModal()">&times;</button></div>
+        <div class="modal-body" id="mail-modal-body"></div>
+        <div class="modal-footer">
+            <button class="btn btn-outline btn-sm" onclick="closeMailModal()">닫기</button>
+            <button class="btn btn-primary btn-sm" onclick="copyFromModal()">📋 복사하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+(function() {
+    // ============================================================
+    //  Firebase 설정
+    //  아래 값을 본인의 Firebase 프로젝트 설정으로 교체하세요.
+    //  Firebase Console > 프로젝트 설정 > 일반 > 내 앱 > SDK 설정
+    // ============================================================
+    var firebaseConfig = {
+        apiKey: "AIzaSyDT4l9pSx3ozpcvPzRtfdCwNI0KqMxSk2s",
+        authDomain: "order-d03ce.firebaseapp.com",
+        databaseURL: "https://order-d03ce-default-rtdb.firebaseio.com",
+        projectId: "order-d03ce",
+        storageBucket: "order-d03ce.firebasestorage.app",
+        messagingSenderId: "930014374996",
+        appId: "1:930014374996:web:67d764f5bc946d1781d1c1",
+        measurementId: "G-XQ05G0D196"
+    };
+
+    var db = null;
+    var fbReady = false;
+
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        fbReady = firebaseConfig.projectId !== 'YOUR_PROJECT_ID';
+    } catch(e) {
+        fbReady = false;
+    }
+
+    // ============================================================
+    //  Firestore 데이터 관리
+    // ============================================================
+    var COL = 'nfrd_security';
+
+    function fbDoc(docId) { return db.collection(COL).doc(docId); }
+
+    async function fbGet(docId) {
+        if (!fbReady) return null;
+        try {
+            var snap = await fbDoc(docId).get();
+            return snap.exists ? snap.data() : null;
+        } catch(e) { return null; }
+    }
+    async function fbSet(docId, obj) {
+        if (!fbReady) return;
+        try { await fbDoc(docId).set(obj, {merge: true}); } catch(e) { console.error('fbSet error:', e); }
+    }
+
+    // ============================================================
+    //  로컬 데이터 (메모리 캐시)
+    // ============================================================
+    async function hashPw(pw) {
+        var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+        return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+    }
+    var DEFAULT_PW_HASH = 'a58bd88f74b9e3994af7e6f5d3e5c07877e1e5bfc9b466cbdda5fbbbc63a61b5';
+    var data = { adminPwHash: DEFAULT_PW_HASH, managers:{}, org:{}, submissions:{} };
+
+    async function loadAllData() {
+        if (!fbReady) return;
+        try {
+            var configSnap = await fbGet('config');
+            if (configSnap) {
+                data.adminPwHash = configSnap.adminPwHash || DEFAULT_PW_HASH;
+                data.managers = configSnap.managers || {};
+            }
+            var allDocs = await db.collection(COL).get();
+            allDocs.forEach(function(doc) {
+                var id = doc.id;
+                var d = doc.data();
+                if (id.startsWith('org_')) {
+                    var q = id.substring(4);
+                    data.org[q] = d.teams || [];
+                } else if (id.startsWith('sub_')) {
+                    var q2 = id.substring(4);
+                    data.submissions[q2] = d.entries || [];
+                }
+            });
+        } catch(e) {
+            console.error('loadAllData error:', e);
+        }
+    }
+
+    async function saveConfig() {
+        await fbSet('config', { adminPwHash: data.adminPwHash, managers: data.managers });
+    }
+    async function saveOrg(quarter) {
+        await fbSet('org_' + quarter, { teams: data.org[quarter] || [] });
+    }
+    async function saveSubmissions(quarter) {
+        await fbSet('sub_' + quarter, { entries: data.submissions[quarter] || [] });
+    }
+
+
+    // ============================================================
+    //  유틸리티
+    // ============================================================
+    var QUESTIONS = [
+        '비밀번호를 타인과 공유하지 않았다.',
+        '동일 비밀번호를 여러 서비스에 사용하지 않는다.',
+        '자리 이탈 시 화면 잠금을 사용한다. (Win + L)',
+        '보안 업데이트를 미루지 않았다.',
+        '검증되지 않은 프로그램을 설치하지 않았다.',
+        '업무 파일을 개인 클라우드에 저장하지 않는다.',
+        '중요 파일은 지정된 위치에 저장한다.',
+        '외부 전송 시 파일 보안을 확인한다.',
+        '의심스러운 메일 링크를 클릭하지 않는다.',
+        '첨부파일 실행 전 확인한다.',
+        '이상 메일은 경영관리팀에 공유한다.',
+        '외부 배포 전 보안 점검을 수행했다.',
+        'API 키, 비밀번호를 코드에 저장하지 않았다.',
+        '허용된 AI 도구만 사용한다.',
+        '개인정보 및 기밀정보를 입력하지 않는다.',
+        '이상 징후 발견 시 즉시 공유한다.',
+        '문제 발생 시 혼자 해결하려 하지 않는다.'
+    ];
+
+    function getCurrentQuarter() {
+        var now = new Date();
+        var q = Math.ceil((now.getMonth()+1)/3);
+        var y = now.getFullYear();
+        // 2026-Q2 ~ 2026-Q4 범위 내로 보정
+        if (y < 2026 || (y === 2026 && q < 2)) return '2026-Q2';
+        if (y > 2026 || (y === 2026 && q > 4)) return '2026-Q4';
+        return y + '-Q' + q;
+    }
+    function getQuarterOptions() {
+        return ['2026-Q2', '2026-Q3', '2026-Q4'];
+    }
+    function fillSelect(sel, opts, selected) {
+        sel.textContent = '';
+        opts.forEach(function(o) {
+            var opt = document.createElement('option');
+            opt.value = o; opt.textContent = o;
+            if (o === selected) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+    var EXIT_MAIL_TEXT = '[경영관리팀] 퇴사자 발생에 따른 보안 조치 안내\n\n' +
+        '○○팀 담당자님께,\n\n' +
+        '안녕하세요, 경영관리팀입니다.\n' +
+        '○○○님의 퇴사(○월 ○일)에 따라, 아래 보안 조치를 진행해 주시기 바랍니다.\n\n' +
+        '─────────────────────────\n\n' +
+        '1. 팀 내 시스템 비밀번호 변경\n' +
+        '- 관리 시스템 등 팀 공용 계정의 비밀번호를 변경 혹은 변경요청해주세요.\n\n' +
+        '2. 공유 문서·폴더 접근 권한 회수\n' +
+        '- 구글 드라이브, 잔디, 노션 등 공유 중인 문서의 공유 설정을 확인하고, 퇴사자 계정을 제거해 주세요.\n\n' +
+        '3. 팀 내 공유 링크 점검\n' +
+        '- 퇴사자에게 공유된 외부 링크(구글 시트, 대시보드 등)가 있다면 공유를 해제하거나 링크를 재발급해 주세요.\n\n' +
+        '4. 기타 확인 사항\n' +
+        '- 퇴사자가 보유하고 있던 USB, 보조저장매체 등이 있다면 회수해 주세요.\n' +
+        '- 업무 인수인계 과정에서 개인 클라우드나 외부 메일로 파일이 전송되지 않았는지 확인해 주세요.\n\n' +
+        '─────────────────────────\n\n' +
+        '※ 하이웍스·잔디 계정 비활성화는 경영관리팀에서 처리 완료하였습니다.\n' +
+        '※ 위 조치는 퇴사일로부터 3영업일 이내 완료 부탁드립니다.\n' +
+        '※ 문의사항이 있으시면 경영관리팀으로 연락 주세요.\n\n' +
+        '감사합니다.\n' +
+        '경영관리팀 드림';
+    window.copyExitMail = function() {
+        document.getElementById('mail-modal-body').textContent = EXIT_MAIL_TEXT;
+        document.getElementById('mail-modal').classList.add('show');
+    };
+    window.closeMailModal = function() {
+        document.getElementById('mail-modal').classList.remove('show');
+    };
+    window.copyFromModal = function() {
+        navigator.clipboard.writeText(EXIT_MAIL_TEXT).then(function() {
+            closeMailModal();
+            toast('메일 내용이 복사되었습니다. 붙여넣기(Ctrl+V)하세요.');
+        });
+    };
+    document.getElementById('mail-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeMailModal();
+    });
+    function toast(msg) {
+        var t = document.getElementById('toast');
+        t.textContent = msg; t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+    function todayStr() {
+        var d = new Date();
+        return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    function formatDate(str) {
+        if (!str) return '';
+        var p = str.split('-');
+        return p[0]+'년 '+parseInt(p[1])+'월 '+parseInt(p[2])+'일';
+    }
+    function getOrgMembers(quarter) {
+        var teams = data.org[quarter] || [], all = [];
+        teams.forEach(function(t) { t.members.forEach(function(m) { all.push({team:t.team,name:m}); }); });
+        return all;
+    }
+    var CAT_MAP = [
+        {label:'1. 계정 / 비밀번호', start:0, end:2},
+        {label:'2. PC / 업무환경', start:2, end:5},
+        {label:'3. 파일 / 데이터 관리', start:5, end:8},
+        {label:'4. 메일 / 피싱 대응', start:8, end:11},
+        {label:'5. 웹 / 서비스 사용', start:11, end:12},
+        {label:'6. AI 도구 사용', start:12, end:15},
+        {label:'7. 사고 대응', start:15, end:17}
+    ];
+    function buildPdfHTML(sub, q) {
+        var rows = '';
+        CAT_MAP.forEach(function(cat) {
+            rows += '<tr><td class="pdf-cat" colspan="3">' + cat.label + '</td></tr>';
+            for (var i = cat.start; i < cat.end; i++) {
+                var ok = sub.answers[i];
+                rows += '<tr><td style="width:30px;text-align:center">' + (i+1) + '</td><td>' + QUESTIONS[i] + '</td>';
+                rows += '<td class="' + (ok ? 'pdf-ok' : 'pdf-no') + '" style="width:50px">' + (ok ? 'O' : 'X') + '</td></tr>';
+            }
+        });
+        var oCount = sub.answers.filter(function(a){return a;}).length;
+        return '<div class="pdf-wrap">' +
+            '<div class="pdf-header"><h2>정보보안 자가점검 체크리스트</h2><p>(주)넷폼알앤디 · 경영관리팀</p></div>' +
+            '<div class="pdf-info">' +
+                '<div class="pdf-info-left"><table>' +
+                    '<tr><td>분 기</td><td>' + q + '</td></tr>' +
+                    '<tr><td>소 속</td><td>' + sub.team + '</td></tr>' +
+                    '<tr><td>성 명</td><td>' + sub.name + '</td></tr>' +
+                    '<tr><td>제출일</td><td>' + sub.date + '</td></tr>' +
+                    '<tr><td>결 과</td><td>' + oCount + ' / ' + QUESTIONS.length + '</td></tr>' +
+                '</table></div>' +
+                '<div class="pdf-sign-box"><div class="pdf-sign-label">확 인</div>' +
+                (sub.signatureImg ? '<img class="pdf-sign-img" src="' + sub.signatureImg + '">' : '') +
+                '<div class="pdf-sign-name">' + sub.signature + ' <span class="pdf-sign-stamp">(인)</span></div></div>' +
+            '</div>' +
+            '<table class="pdf-tbl"><thead><tr><th style="width:30px">#</th><th>점검 항목</th><th style="width:50px">결과</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<div class="pdf-footer">본 문서는 정보보안 자가점검 결과를 기록한 것입니다.</div>' +
+        '</div>';
+    }
+    function openPdfPrint(htmlContent, title) {
+        var w = window.open('', '_blank', 'width=800,height=1000');
+        if (!w) { toast('팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해 주세요.'); return; }
+        var pdfStyles = '@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");' +
+            'body{margin:32px;font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;color:#1f2937;font-size:13px;line-height:1.6;}' +
+            '.pdf-wrap .pdf-header{text-align:center;margin-bottom:24px;border-bottom:2px solid #4f46e5;padding-bottom:16px;}' +
+            '.pdf-wrap .pdf-header h2{font-size:20px;font-weight:800;margin:0 0 4px;}' +
+            '.pdf-wrap .pdf-header p{font-size:12px;color:#6b7280;margin:0;}' +
+            '.pdf-wrap .pdf-info{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}' +
+            '.pdf-wrap .pdf-info-left table{border-collapse:collapse;font-size:13px;}' +
+            '.pdf-wrap .pdf-info-left td{padding:4px 12px 4px 0;}' +
+            '.pdf-wrap .pdf-info-left td:first-child{font-weight:600;color:#374151;white-space:nowrap;}' +
+            '.pdf-wrap .pdf-sign-box{text-align:center;border:2px solid #4f46e5;border-radius:10px;padding:14px 24px;min-width:140px;}' +
+            '.pdf-wrap .pdf-sign-label{font-size:11px;color:#6b7280;margin-bottom:6px;}' +
+            '.pdf-wrap .pdf-sign-name{font-size:18px;font-weight:800;color:#1f2937;}' +
+            '.pdf-wrap .pdf-sign-stamp{color:#dc2626;font-weight:800;font-size:16px;}' +
+            '.pdf-wrap .pdf-sign-img{max-width:160px;max-height:60px;display:block;margin:6px auto 4px;}' +
+            '.pdf-wrap .pdf-tbl{width:100%;border-collapse:collapse;font-size:12px;}' +
+            '.pdf-wrap .pdf-tbl th{background:#f3f4f6;padding:8px 10px;text-align:left;font-weight:600;border:1px solid #e5e7eb;font-size:11px;}' +
+            '.pdf-wrap .pdf-tbl td{padding:7px 10px;border:1px solid #e5e7eb;}' +
+            '.pdf-wrap .pdf-tbl .pdf-cat{background:#eef2ff;font-weight:700;color:#4f46e5;font-size:11px;letter-spacing:0.5px;}' +
+            '.pdf-wrap .pdf-tbl .pdf-ok{color:#059669;font-weight:700;text-align:center;}' +
+            '.pdf-wrap .pdf-tbl .pdf-no{color:#dc2626;font-weight:700;text-align:center;}' +
+            '.pdf-wrap .pdf-footer{margin-top:20px;text-align:center;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px;}' +
+            '.page-break{page-break-before:always;}' +
+            '@media print{body{margin:20px;}}';
+        w.document.open();
+        w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title><style>' + pdfStyles + '</style></head><body>' + htmlContent + '</body></html>');
+        w.document.close();
+        setTimeout(function(){ w.print(); }, 600);
+    }
+
+    // ============================================================
+    //  담당자 관리 (Edit 버튼 토글)
+    // ============================================================
+    var mgrEditMode = false;
+    var mgrEditBtn = document.getElementById('btn-mgr-edit');
+    var pgOverview = document.getElementById('pg-overview');
+
+    mgrEditBtn.addEventListener('click', function() {
+        mgrEditMode = !mgrEditMode;
+        if (mgrEditMode) {
+            pgOverview.classList.add('mgr-edit-mode');
+            mgrEditBtn.classList.add('active');
+            mgrEditBtn.textContent = '💾 저장';
+        } else {
+            pgOverview.classList.remove('mgr-edit-mode');
+            mgrEditBtn.classList.remove('active');
+            mgrEditBtn.textContent = '✏️ 담당자 편집';
+            document.querySelectorAll('.mgr-input').forEach(function(inp) {
+                var key = inp.getAttribute('data-mgr');
+                data.managers[key] = inp.value.trim();
+            });
+            saveConfig();
+            toast('담당자가 저장되었습니다.');
+        }
+    });
+
+    function initManagers() {
+        document.querySelectorAll('.mgr-input').forEach(function(inp) {
+            var key = inp.getAttribute('data-mgr');
+            inp.value = data.managers[key] || '';
+        });
+    }
+
+    // ============================================================
+    //  페이지 네비게이션
+    // ============================================================
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+            btn.classList.add('active');
+            document.getElementById('pg-'+btn.dataset.page).classList.add('active');
+            if (btn.dataset.page === 'checklist') initChecklist();
+            if (btn.dataset.page === 'admin') initAdmin();
+        });
+    });
+
+    // ============================================================
+    //  보안안내 가이드 패널 네비게이션
+    // ============================================================
+    var gPanels = document.querySelectorAll('.g-panel');
+    var gNav = document.getElementById('g-nav');
+    var gDots = gNav ? gNav.querySelectorAll('.g-dot') : [];
+    var gGroups = gNav ? gNav.querySelectorAll('.g-step-group') : [];
+    var gPrev = document.getElementById('gPrev');
+    var gNext = document.getElementById('gNext');
+    var gInfo = document.getElementById('gInfo');
+    var gCur = 0;
+    var gTotal = gPanels.length;
+
+    gDots.forEach(function(dot) {
+        dot.addEventListener('click', function() { gGo(parseInt(this.dataset.gi)); });
+    });
+
+    function gGo(idx) {
+        if (idx < 0 || idx >= gTotal) return;
+        gPanels.forEach(function(p) { p.classList.remove('g-show'); });
+        gPanels[idx].classList.add('g-show');
+        gDots.forEach(function(d, i) {
+            d.classList.remove('g-active', 'g-done');
+            if (i < idx) d.classList.add('g-done');
+            if (i === idx) d.classList.add('g-active');
+        });
+        gGroups.forEach(function(g) { g.classList.remove('g-has-active'); });
+        var activeDot = gNav.querySelector('.g-dot.g-active');
+        if (activeDot) {
+            var parentGroup = activeDot.closest('.g-step-group');
+            if (parentGroup) parentGroup.classList.add('g-has-active');
+        }
+        gCur = idx;
+        if (gInfo) gInfo.textContent = (idx + 1) + ' / ' + gTotal;
+        if (gPrev) gPrev.disabled = (idx === 0);
+        if (gNext) gNext.disabled = (idx === gTotal - 1);
+    }
+
+    if (gPrev) gPrev.addEventListener('click', function() { gGo(gCur - 1); });
+    if (gNext) gNext.addEventListener('click', function() { gGo(gCur + 1); });
+    var btnGoChecklist = document.getElementById('btn-go-checklist');
+    if (btnGoChecklist) btnGoChecklist.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelector('[data-page="checklist"]').classList.add('active');
+        document.getElementById('pg-checklist').classList.add('active');
+        initChecklist();
+    });
+
+    // ============================================================
+    //  URL 해시 자동 이동 (#guide-3, #guide-4 등)
+    // ============================================================
+    (function handleHash() {
+        var hash = window.location.hash;
+        var match = hash.match(/^#guide-(\d+)$/);
+        if (match) {
+            var idx = parseInt(match[1]);
+            // 지침 탭 활성화
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelector('[data-page="guide"]').classList.add('active');
+            document.getElementById('pg-guide').classList.add('active');
+            // 패널 이동
+            setTimeout(function() { gGo(idx); }, 100);
+        }
+    })();
+
+    // ============================================================
+    //  자가점검 (Checklist)
+    // ============================================================
+    var clQuarter = document.getElementById('cl-quarter');
+    var clTeam = document.getElementById('cl-team');
+    var clName = document.getElementById('cl-name');
+    var signName = document.getElementById('sign-name');
+    var signDate = document.getElementById('sign-date-display');
+    var btnSubmit = document.getElementById('btn-submit');
+
+    function initChecklist() {
+        fillSelect(clQuarter, getQuarterOptions(), getCurrentQuarter());
+        signDate.textContent = formatDate(todayStr());
+        updateClTeams();
+    }
+    function getTeamsSorted() {
+        var teams = data.org[clQuarter.value] || [];
+        return teams.slice().sort(function(a, b) {
+            if (a.team === '경영관리팀') return -1;
+            if (b.team === '경영관리팀') return 1;
+            return 0;
+        });
+    }
+    function updateClTeams() {
+        var teams = getTeamsSorted();
+        clTeam.textContent = '';
+        var def = document.createElement('option'); def.value = ''; def.textContent = '-- 팀 선택 --'; clTeam.appendChild(def);
+        teams.forEach(function(t) {
+            var o = document.createElement('option'); o.value = t.team; o.textContent = t.team; clTeam.appendChild(o);
+        });
+        updateClNames();
+    }
+    function updateClNames() {
+        var teams = data.org[clQuarter.value] || [];
+        var found = teams.find(function(t) { return t.team === clTeam.value; });
+        clName.textContent = '';
+        var def = document.createElement('option'); def.value = ''; def.textContent = '-- 이름 선택 --'; clName.appendChild(def);
+        if (found) found.members.forEach(function(m) { var o = document.createElement('option'); o.value = m; o.textContent = m; clName.appendChild(o); });
+        signName.value = ''; checkAlready(); validateSubmit();
+    }
+    function checkAlready() {
+        var el = document.getElementById('cl-already');
+        var name = clName.value;
+        if (!name) { el.style.display = 'none'; return false; }
+        var subs = data.submissions[clQuarter.value] || [];
+        var found = subs.find(function(s) { return s.name === name; });
+        if (found) {
+            el.style.display = 'block';
+            document.getElementById('cl-already-msg').textContent = found.date + '에 제출 완료되었습니다.';
+            return true;
+        }
+        el.style.display = 'none'; return false;
+    }
+    function validateSubmit() {
+        var already = checkAlready();
+        var canSubmit = clName.value && clTeam.value && !already;
+        btnSubmit.disabled = !canSubmit;
+        signName.value = clName.value || '';
+        var hint = document.getElementById('submit-hint');
+        if (hint) hint.style.display = canSubmit ? 'none' : 'block';
+    }
+    clQuarter.addEventListener('change', updateClTeams);
+    clTeam.addEventListener('change', updateClNames);
+    clName.addEventListener('change', validateSubmit);
+
+    // ── 서명 패드 (Signature Pad) ──
+    var signCanvas = document.getElementById('sign-canvas');
+    var signCtx = signCanvas.getContext('2d');
+    var signBox = document.getElementById('sign-pad-box');
+    var signPlaceholder = document.getElementById('sign-placeholder');
+    var signDrawing = false, signHasData = false;
+
+    function getSignPos(e) {
+        var rect = signCanvas.getBoundingClientRect();
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (clientX - rect.left) * (signCanvas.width / rect.width), y: (clientY - rect.top) * (signCanvas.height / rect.height) };
+    }
+    function signStart(e) {
+        e.preventDefault();
+        signDrawing = true; signHasData = true;
+        signPlaceholder.style.display = 'none';
+        signBox.classList.add('active');
+        var p = getSignPos(e);
+        signCtx.beginPath(); signCtx.moveTo(p.x, p.y);
+    }
+    function signMove(e) {
+        if (!signDrawing) return;
+        e.preventDefault();
+        var p = getSignPos(e);
+        signCtx.lineWidth = 2.2; signCtx.lineCap = 'round'; signCtx.lineJoin = 'round';
+        signCtx.strokeStyle = '#1f2937';
+        signCtx.lineTo(p.x, p.y); signCtx.stroke();
+    }
+    function signEnd() { signDrawing = false; }
+    signCanvas.addEventListener('mousedown', signStart);
+    signCanvas.addEventListener('mousemove', signMove);
+    signCanvas.addEventListener('mouseup', signEnd);
+    signCanvas.addEventListener('mouseleave', signEnd);
+    signCanvas.addEventListener('touchstart', signStart, {passive:false});
+    signCanvas.addEventListener('touchmove', signMove, {passive:false});
+    signCanvas.addEventListener('touchend', signEnd);
+
+    document.getElementById('sign-clear-btn').addEventListener('click', function() {
+        signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
+        signHasData = false;
+        signPlaceholder.style.display = 'block';
+        signBox.classList.remove('active');
+    });
+
+    function getSignatureDataURL() {
+        if (!signHasData) return '';
+        return signCanvas.toDataURL('image/png');
+    }
+
+    btnSubmit.addEventListener('click', async function() {
+        if (!signHasData) { toast('서명을 입력해 주세요.'); return; }
+        var q = clQuarter.value, answers = [];
+        for (var i = 1; i <= 17; i++) { var cb = document.getElementById('q'+i); answers.push(cb ? cb.checked : false); }
+        if (!data.submissions[q]) data.submissions[q] = [];
+        data.submissions[q].push({
+            team: clTeam.value, name: clName.value, date: todayStr(),
+            answers: answers, signature: clName.value, signatureImg: getSignatureDataURL(), submittedAt: new Date().toISOString()
+        });
+        await saveSubmissions(q);
+        toast(clName.value + '님, 제출 완료되었습니다!');
+        signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
+        signHasData = false; signPlaceholder.style.display = 'block'; signBox.classList.remove('active');
+        validateSubmit();
+    });
+
+    // ============================================================
+    //  관리자 (Admin)
+    // ============================================================
+    var adminLoggedIn = false;
+    document.getElementById('admin-login').addEventListener('click', async function() {
+        var inputHash = await hashPw(document.getElementById('admin-pw').value);
+        if (inputHash === data.adminPwHash) {
+            document.getElementById('admin-lock').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            adminLoggedIn = true; initAdminContent();
+        } else { toast('비밀번호가 틀렸습니다.'); document.getElementById('admin-pw').value = ''; }
+    });
+    document.getElementById('admin-pw').addEventListener('keydown', function(e) { if (e.key==='Enter') document.getElementById('admin-login').click(); });
+    function initAdmin() { if (adminLoggedIn) initAdminContent(); }
+
+    document.querySelectorAll('.admin-sub').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.admin-sub').forEach(function(b) { b.className = 'btn btn-outline admin-sub'; });
+            document.querySelectorAll('.admin-panel').forEach(function(p) { p.style.display = 'none'; });
+            btn.className = 'btn btn-primary admin-sub';
+            document.getElementById('sub-'+btn.dataset.sub).style.display = 'block';
+            if (btn.dataset.sub === 'status') renderStatus();
+            if (btn.dataset.sub === 'org') renderOrg();
+        });
+    });
+    function initAdminContent() {
+        var qOpts = getQuarterOptions(), cur = getCurrentQuarter();
+        fillSelect(document.getElementById('admin-quarter'), qOpts, cur);
+        fillSelect(document.getElementById('org-quarter'), qOpts, cur);
+        fillSelect(document.getElementById('reset-quarter'), qOpts, cur);
+        renderStatus();
+    }
+
+    // ---- 제출 현황 ----
+    document.getElementById('admin-quarter').addEventListener('change', renderStatus);
+    function renderStatus() {
+        var q = document.getElementById('admin-quarter').value;
+        var allMembers = getOrgMembers(q);
+        var subs = data.submissions[q] || [];
+        var subNames = subs.map(function(s) { return s.name; });
+        var done = allMembers.filter(function(m) { return subNames.indexOf(m.name) >= 0; });
+        var pending = allMembers.filter(function(m) { return subNames.indexOf(m.name) < 0; });
+        var pct = allMembers.length ? Math.round(done.length/allMembers.length*100) : 0;
+
+        var summaryEl = document.getElementById('stat-summary');
+        summaryEl.textContent = '';
+        [{n:allMembers.length,l:'전체 인원',c:''},{n:done.length,l:'제출 완료',c:'var(--success)'},{n:pending.length,l:'미제출',c:'var(--danger)'},{n:pct+'%',l:'제출률',c:'var(--accent)'}].forEach(function(s) {
+            var box = document.createElement('div'); box.className = 'stat-box';
+            var num = document.createElement('div'); num.className = 'stat-num'; num.textContent = s.n; if(s.c) num.style.color = s.c;
+            var lbl = document.createElement('div'); lbl.className = 'stat-label'; lbl.textContent = s.l;
+            box.appendChild(num); box.appendChild(lbl); summaryEl.appendChild(box);
+        });
+
+        var doneEl = document.getElementById('stat-done'); doneEl.textContent = '';
+        if (done.length === 0) { var p = document.createElement('p'); p.style.cssText = 'font-size:0.85rem;color:var(--text-muted);padding:8px 0'; p.textContent = '아직 제출한 인원이 없습니다.'; doneEl.appendChild(p); }
+        else done.forEach(function(m) {
+            var sub = subs.find(function(s) { return s.name === m.name; });
+            var card = document.createElement('div'); card.className = 'status-card';
+            card.style.cursor = 'pointer'; card.title = '클릭하면 개별 다운로드';
+            var dot = document.createElement('div'); dot.className = 'dot dot-done';
+            var info = document.createElement('div');
+            var nm = document.createElement('div'); nm.className = 's-name'; nm.textContent = m.name;
+            var dt = document.createElement('div'); dt.className = 's-date'; dt.textContent = m.team + ' · ' + (sub ? sub.date : '');
+            info.appendChild(nm); info.appendChild(dt); card.appendChild(dot); card.appendChild(info);
+            card.addEventListener('click', function() { downloadIndividual(q, sub); });
+            doneEl.appendChild(card);
+        });
+
+        var pendEl = document.getElementById('stat-pending'); pendEl.textContent = '';
+        if (pending.length === 0) { var p2 = document.createElement('p'); p2.style.cssText = 'font-size:0.85rem;color:var(--success);padding:8px 0'; p2.textContent = '전원 제출 완료!'; pendEl.appendChild(p2); }
+        else pending.forEach(function(m) {
+            var card = document.createElement('div'); card.className = 'status-card';
+            var dot = document.createElement('div'); dot.className = 'dot dot-pending';
+            var info = document.createElement('div');
+            var nm = document.createElement('div'); nm.className = 's-name'; nm.textContent = m.name;
+            var dt = document.createElement('div'); dt.className = 's-date'; dt.textContent = m.team;
+            info.appendChild(nm); info.appendChild(dt); card.appendChild(dot); card.appendChild(info);
+            pendEl.appendChild(card);
+        });
+    }
+
+    function downloadIndividual(q, sub) {
+        if (!sub) { toast('제출 데이터를 찾을 수 없습니다.'); return; }
+        var html = buildPdfHTML(sub, q);
+        openPdfPrint(html, '체크리스트_' + q + '_' + sub.name);
+    }
+
+    document.getElementById('btn-download-all').addEventListener('click', function() {
+        var q = document.getElementById('admin-quarter').value;
+        var subs = data.submissions[q] || [];
+        if (subs.length === 0) { toast('제출 데이터가 없습니다.'); return; }
+        var allHtml = '';
+        subs.forEach(function(s, idx) {
+            if (idx > 0) allHtml += '<div class="page-break"></div>';
+            allHtml += buildPdfHTML(s, q);
+        });
+        openPdfPrint(allHtml, '체크리스트_전체_' + q);
+        toast('전체 PDF를 생성했습니다.');
+    });
+
+    document.getElementById('btn-download-pending').addEventListener('click', function() {
+        var q = document.getElementById('admin-quarter').value;
+        var allMembers = getOrgMembers(q);
+        var subs = data.submissions[q] || [];
+        var subNames = subs.map(function(s) { return s.name; });
+        var pending = allMembers.filter(function(m) { return subNames.indexOf(m.name) < 0; });
+        if (pending.length === 0) { toast('미제출자가 없습니다.'); return; }
+        var lines = ['미제출자 명단 (' + q + ')', '', '팀,이름'];
+        pending.forEach(function(m) { lines.push(m.team + ',' + m.name); });
+        downloadCSV('미제출자_' + q + '.csv', lines.join('\n'));
+        toast('미제출자 명단을 다운로드했습니다.');
+    });
+
+    // ============================================================
+    //  조직도 관리 (Org) + HTML 업로드
+    // ============================================================
+    document.getElementById('org-quarter').addEventListener('change', renderOrg);
+
+    // 조직도 HTML 파싱
+    function parseOrgChartHTML(htmlStr) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(htmlStr, 'text/html');
+        var result = [];
+        var seen = {};
+
+        function findDiv(el) {
+            var node = el;
+            while (node) {
+                var prev = node.previousElementSibling;
+                while (prev) {
+                    if (prev.querySelector && prev.querySelector('.o-div .o-nm')) {
+                        return prev.querySelector('.o-div .o-nm').textContent.trim();
+                    }
+                    if (prev.classList && prev.classList.contains('o-div')) {
+                        var nm = prev.querySelector('.o-nm');
+                        if (nm) return nm.textContent.trim();
+                    }
+                    prev = prev.previousElementSibling;
+                }
+                node = node.parentElement;
+            }
+            return '';
+        }
+
+        // o-tm (팀) 파싱
+        doc.querySelectorAll('.o-tm').forEach(function(tm) {
+            var nmEl = tm.querySelector('.o-nm');
+            if (!nmEl) return;
+            var teamName = nmEl.textContent.trim();
+            if (!teamName || seen[teamName]) return;
+            seen[teamName] = true;
+
+            var divName = findDiv(tm.closest('.o-col') || tm);
+            var members = [];
+            var col = tm.closest('.o-col');
+            if (col) {
+                var children = col.children;
+                for (var c = 0; c < children.length; c++) {
+                    if (children[c] === tm) break;
+                    if (children[c].classList && children[c].classList.contains('o-head')) {
+                        var hnm = children[c].querySelector('.o-nm');
+                        if (hnm) {
+                            var hname = hnm.textContent.trim();
+                            if (hname && members.indexOf(hname) < 0) members.push(hname);
+                        }
+                    }
+                }
+                var sib = tm.nextElementSibling;
+                while (sib) {
+                    if (sib.classList && sib.classList.contains('o-mems')) {
+                        sib.querySelectorAll('.o-mem').forEach(function(mem) {
+                            var mnm = mem.querySelector('.o-nm');
+                            if (mnm) {
+                                var mname = mnm.textContent.trim();
+                                if (mname && members.indexOf(mname) < 0) members.push(mname);
+                            }
+                        });
+                        break;
+                    }
+                    if (sib.classList && (sib.classList.contains('o-row') || sib.classList.contains('o-tm'))) break;
+                    sib = sib.nextElementSibling;
+                }
+            }
+            result.push({team: teamName, div: divName, members: members});
+        });
+
+        // o-subdiv (사업부/연구소) 파싱
+        doc.querySelectorAll('.o-subdiv').forEach(function(sd) {
+            var nmEl = sd.querySelector('.o-nm');
+            if (!nmEl) return;
+            var teamName = nmEl.textContent.trim();
+            if (!teamName || seen[teamName]) return;
+
+            var members = [];
+            var col = sd.closest('.o-col');
+            if (col) {
+                var children = col.children;
+                for (var c = 0; c < children.length; c++) {
+                    if (children[c].classList && children[c].classList.contains('o-head')) {
+                        var hnm = children[c].querySelector('.o-nm');
+                        if (hnm) {
+                            var hname = hnm.textContent.trim();
+                            if (hname && members.indexOf(hname) < 0) members.push(hname);
+                        }
+                    }
+                    if (children[c].classList && children[c].classList.contains('o-mems')) {
+                        children[c].querySelectorAll('.o-mem').forEach(function(mem) {
+                            var mnm = mem.querySelector('.o-nm');
+                            if (mnm) {
+                                var mname = mnm.textContent.trim();
+                                if (mname && members.indexOf(mname) < 0) members.push(mname);
+                            }
+                        });
+                    }
+                }
+            }
+            if (members.length > 0) {
+                seen[teamName] = true;
+                result.push({team: teamName, div: teamName, members: members});
+            }
+        });
+
+        // 경영관리팀을 맨 위로
+        result.sort(function(a, b) {
+            if (a.team === '경영관리팀') return -1;
+            if (b.team === '경영관리팀') return 1;
+            return 0;
+        });
+
+        return result;
+    }
+
+    // 파일 업로드 처리
+    var uploadArea = document.getElementById('upload-area');
+    var fileInput = document.getElementById('org-file-input');
+
+    uploadArea.addEventListener('click', function() { fileInput.click(); });
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', function() { uploadArea.classList.remove('drag-over'); });
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault(); uploadArea.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleOrgFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) handleOrgFile(fileInput.files[0]);
+        fileInput.value = '';
+    });
+
+    async function handleOrgFile(file) {
+        if (!file.name.match(/\.html?$/i)) { toast('HTML 파일만 업로드 가능합니다.'); return; }
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+            var htmlStr = e.target.result;
+            var parsed = parseOrgChartHTML(htmlStr);
+            if (parsed.length === 0) {
+                toast('조직도 데이터를 찾을 수 없습니다. 올바른 조직도 HTML인지 확인하세요.');
+                return;
+            }
+            var q = document.getElementById('org-quarter').value;
+            data.org[q] = parsed;
+            await saveOrg(q);
+
+            var totalMembers = 0;
+            parsed.forEach(function(t) { totalMembers += t.members.length; });
+
+            var resultEl = document.getElementById('upload-result');
+            resultEl.style.display = 'block';
+            resultEl.textContent = '';
+            resultEl.className = 'upload-result';
+            var strong = document.createElement('strong');
+            strong.textContent = '업로드 완료! ';
+            resultEl.appendChild(strong);
+            resultEl.appendChild(document.createTextNode(parsed.length + '개 팀, ' + totalMembers + '명의 인원이 ' + q + ' 분기에 반영되었습니다.'));
+
+            renderOrg();
+            toast('조직도가 반영되었습니다.');
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    // 조직도 렌더링
+    function renderOrg() {
+        var q = document.getElementById('org-quarter').value;
+        var teams = data.org[q] || [];
+        var container = document.getElementById('org-teams');
+        container.textContent = '';
+        teams.forEach(function(t, tIdx) {
+            var block = document.createElement('div'); block.className = 'team-block';
+            var hdr = document.createElement('div'); hdr.className = 'team-block-header';
+            var hdrName = document.createElement('span'); hdrName.className = 'team-block-name'; hdrName.textContent = t.team + ' (' + t.members.length + '명)';
+            var hdrDel = document.createElement('button'); hdrDel.className = 'btn btn-outline btn-sm'; hdrDel.textContent = '팀 삭제'; hdrDel.style.cssText = 'font-size:0.75rem;color:var(--danger)';
+            hdrDel.addEventListener('click', function() {
+                if (confirm(t.team + ' 팀을 삭제하시겠습니까?')) { teams.splice(tIdx, 1); data.org[q] = teams; saveOrg(q); renderOrg(); }
+            });
+            hdr.appendChild(hdrName); hdr.appendChild(hdrDel); block.appendChild(hdr);
+
+            var tags = document.createElement('div'); tags.className = 'org-member-tags';
+            t.members.forEach(function(m, mIdx) {
+                var tag = document.createElement('span'); tag.className = 'org-tag'; tag.textContent = m;
+                var x = document.createElement('button'); x.textContent = '\u00D7';
+                x.addEventListener('click', function() { t.members.splice(mIdx, 1); data.org[q] = teams; saveOrg(q); renderOrg(); });
+                tag.appendChild(x); tags.appendChild(tag);
+            });
+            block.appendChild(tags);
+
+            var addRow = document.createElement('div'); addRow.className = 'org-input-row';
+            var addInput = document.createElement('input'); addInput.type = 'text'; addInput.placeholder = '이름 입력';
+            var addBtn = document.createElement('button'); addBtn.className = 'btn btn-outline btn-sm'; addBtn.textContent = '추가';
+            function doAdd() {
+                var nm = addInput.value.trim();
+                if (nm) { t.members.push(nm); data.org[q] = teams; saveOrg(q); renderOrg(); }
+            }
+            addBtn.addEventListener('click', doAdd);
+            addInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doAdd(); });
+            addRow.appendChild(addInput); addRow.appendChild(addBtn); block.appendChild(addRow);
+            container.appendChild(block);
+        });
+    }
+
+    document.getElementById('btn-add-team').addEventListener('click', async function() {
+        var q = document.getElementById('org-quarter').value;
+        var nm = document.getElementById('new-team-name').value.trim();
+        if (!nm) return;
+        if (!data.org[q]) data.org[q] = [];
+        data.org[q].push({team:nm, members:[]});
+        await saveOrg(q);
+        document.getElementById('new-team-name').value = ''; renderOrg();
+        toast(nm + ' 팀이 추가되었습니다.');
+    });
+    document.getElementById('btn-copy-org').addEventListener('click', async function() {
+        var q = document.getElementById('org-quarter').value;
+        var parts = q.split('-Q'); var year = parseInt(parts[0]); var qNum = parseInt(parts[1]);
+        var prevQ = qNum > 1 ? (year+'-Q'+(qNum-1)) : ((year-1)+'-Q4');
+        var prev = data.org[prevQ];
+        if (!prev || prev.length === 0) { toast('이전 분기(' + prevQ + ')에 조직도가 없습니다.'); return; }
+        if (data.org[q] && data.org[q].length > 0 && !confirm('현재 분기 조직도를 덮어쓰시겠습니까?')) return;
+        data.org[q] = JSON.parse(JSON.stringify(prev));
+        await saveOrg(q);
+        renderOrg(); toast(prevQ + ' 조직도를 복사했습니다.');
+    });
+
+    // ---- 설정 ----
+    document.getElementById('btn-change-pw').addEventListener('click', async function() {
+        var oldHash = await hashPw(document.getElementById('set-old-pw').value);
+        if (oldHash !== data.adminPwHash) { toast('현재 비밀번호가 틀렸습니다.'); return; }
+        var np = document.getElementById('set-new-pw').value;
+        if (!np || np.length < 4) { toast('4자 이상 입력하세요.'); return; }
+        data.adminPwHash = await hashPw(np); await saveConfig();
+        document.getElementById('set-old-pw').value = ''; document.getElementById('set-new-pw').value = '';
+        toast('비밀번호가 변경되었습니다.');
+    });
+    document.getElementById('btn-reset').addEventListener('click', async function() {
+        var q = document.getElementById('reset-quarter').value;
+        if (!confirm(q + ' 분기 제출 데이터를 모두 삭제하시겠습니까?')) return;
+        data.submissions[q] = []; await saveSubmissions(q);
+        toast(q + ' 초기화 완료'); renderStatus();
+    });
+
+    // ============================================================
+    //  초기화
+    // ============================================================
+    loadAllData().then(function() {
+        initManagers();
+        initChecklist();
+    });
+})();
+</script>
+</body>
+</html>
