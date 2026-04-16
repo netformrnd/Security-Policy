@@ -126,6 +126,7 @@
             text-transform: uppercase; letter-spacing: 1px; padding: 16px 0 6px;
             border-bottom: 2px solid var(--accent-light);
         }
+        .highlight-important { background: linear-gradient(transparent 50%, #fde68a 50%); padding: 0 4px; font-weight: 800; }
         .sign-area {
             background: var(--surface); border: 2px solid var(--accent);
             border-radius: 14px; padding: 24px 28px; margin-top: 20px;
@@ -930,6 +931,8 @@
         <div class="check-cat">5. 웹 / 서비스 사용</div>
         <div class="check-item"><input type="checkbox" id="q12"><label for="q12">외부 배포 전 보안 점검을 수행했다.</label></div>
         <div class="check-item"><input type="checkbox" id="q13"><label for="q13">API 키, 비밀번호를 코드에 저장하지 않았다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q-sv1"><label for="q-sv1"><span class="highlight-important">중요</span> 경영관리팀에서 배포하는 클로드 지침 MD 파일을 HTML 제작 시 반영했다.</label></div>
+        <div class="check-item"><input type="checkbox" id="q-sv2"><label for="q-sv2"><span class="highlight-important">중요</span> 담당 서비스 보안 점검을 수행했다. (GitHub Private 설정, 파이어베이스 규칙 확인)</label></div>
         <div class="check-cat">6. 접근 권한 관리</div>
         <div class="check-item"><input type="checkbox" id="q-ac1"><label for="q-ac1">업무상 불필요한 공유 문서·폴더 접근 권한을 정리했다.</label></div>
         <div class="check-item"><input type="checkbox" id="q-ac2"><label for="q-ac2">퇴사·부서이동자의 공유 권한이 회수되었는지 확인했다.</label></div>
