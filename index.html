@@ -1055,6 +1055,40 @@
                     <button class="btn btn-danger btn-sm" id="btn-reset">해당 분기 초기화</button>
                 </div>
             </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-blue">&#128231;</span> 미제출자 알림 메일</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">미제출자에게 자가점검 재요청 메일을 발송합니다. 지정한 1·2·3차 날짜에는 관리 페이지 접속 시 자동 발송되며, 하루에 한 번만 발송됩니다(중복 방지).</p>
+                <div class="form-row" style="margin-bottom:10px">
+                    <select id="rmd-quarter"></select>
+                    <button class="btn btn-outline btn-sm" id="btn-rmd-preview">&#128065; 미리보기 (발송 안 함)</button>
+                    <button class="btn btn-primary btn-sm" id="btn-rmd-send">&#128231; 미제출자 재요청 발송</button>
+                </div>
+                <div id="rmd-schedule" style="font-size:0.78rem;color:var(--text-muted)"></div>
+            </div>
+            <div class="section">
+                <div class="section-title"><span class="badge badge-blue">&#128231;</span> 이메일 관리 (조직도 기반)</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">선택한 분기의 <b>조직도 인원</b> 기준으로 이메일을 관리합니다. 조직도에 없는 이메일(퇴사자 등)은 아래에서 검토·삭제할 수 있습니다. 변경은 즉시 저장되며 샐러드 앱과 공유됩니다.</p>
+                <div class="form-row" style="margin-bottom:10px">
+                    <select id="em-quarter"></select>
+                    <button class="btn btn-outline btn-sm" id="btn-em-refresh">&#128260; 새로고침</button>
+                </div>
+                <div class="form-row" style="margin-bottom:14px">
+                    <input type="text" id="em-search" placeholder="🔍 이름 검색" style="min-width:150px">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.83rem;cursor:pointer">
+                        <input type="checkbox" id="em-only-missing" style="width:16px;height:16px;cursor:pointer"> 이메일 미등록만 보기
+                    </label>
+                </div>
+                <div id="em-org-list" style="margin-bottom:18px"></div>
+                <div id="em-orphan-list" style="margin-bottom:18px"></div>
+                <div style="border-top:1px solid var(--border-light);padding-top:14px">
+                    <div style="font-size:0.8rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px">조직도에 없는 사람 직접 추가 (예외)</div>
+                    <div class="form-row">
+                        <input type="text" id="em-name" placeholder="이름" style="min-width:120px">
+                        <input type="text" id="em-addr" placeholder="이메일 주소" style="min-width:220px">
+                        <button class="btn btn-primary btn-sm" id="btn-em-add">추가</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1075,6 +1109,8 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- EmailJS SDK (미제출자 알림 메일용) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script>
 (function() {
@@ -1269,23 +1305,292 @@
         teams.forEach(function(t) { t.members.forEach(function(m) { all.push({team:t.team,name:m}); }); });
         return all;
     }
-    function downloadCSV(filename, content) {
-    var BOM = '\uFEFF';
-    var blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
-    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(blob, filename);
-        return;
+
+    // ============================================================
+    //  [추가] 미제출자 자동 알림 메일 (EmailJS)
+    //  ※ 샐러드 앱과 동일한 Firebase(order-d03ce) / EmailJS 계정 재사용
+    // ============================================================
+    // ★ 정보보안 전용 새 EmailJS(무료) 계정의 값으로 아래 4개를 교체하세요
+    var EMAILJS_PUBLIC_KEY = 'FDHnEl1pxWyciWuQK';     // ① Account > General > Public Key
+    var EMAILJS_SERVICE    = 'service_tw8zbgp';       // ② Email Services (Gmail: netformmgmt)
+    var EMAILJS_TEMPLATE   = 'template_6ezhsnq';      // ③ Email Templates (정보보안 미제출 안내)
+    var SUBMIT_URL         = 'https://netformrnd.github.io/Security-Policy/';  // ④ 자가점검 페이지 실제 주소
+    try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.error('EmailJS init 실패:', e); }
+
+    // ★ 자동 발송 스위치 — 날짜(팀 확정) 전까지는 false로 꺼둠. 확정되면 true로 바꾸면 지정 날짜에 자동 발송됨.
+    //   (false여도 관리자 화면의 "미제출자 재요청 발송" 수동 버튼은 정상 작동)
+    var AUTO_SEND_ENABLED = false;
+
+    // 리마인더 대상 분기 · 기한 · 1·2·3차 발송 날짜(YYYY-MM-DD) — 분기마다 이 값만 갱신
+    var REMINDER_QUARTER  = '2026-Q3';
+    var REMINDER_DEADLINE = '2026-09-23';
+    var REMINDER_WAVES = [
+        { key: '1', date: '2026-09-18', label: '1차' },
+        { key: '2', date: '2026-09-21', label: '2차' },
+        { key: '3', date: '2026-09-23', label: '3차' }
+    ];
+
+    var EMAILS = {};  // settings/emails 문서(이름→이메일)에서 로드, 샐러드 앱과 공유
+    async function loadEmails() {
+        if (!fbReady) return;
+        try {
+            var snap = await db.collection('settings').doc('emails').get();
+            if (snap.exists) EMAILS = (snap.data() && snap.data().list) || {};  // 샐러드 앱과 동일: {list:{이름:이메일}} 구조
+        } catch(e) { console.error('loadEmails error:', e); }
     }
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 100);
-}
+
+    function configReady() {
+        return EMAILJS_PUBLIC_KEY.indexOf('REPLACE') < 0 && EMAILJS_SERVICE.indexOf('REPLACE') < 0 &&
+               EMAILJS_TEMPLATE.indexOf('REPLACE') < 0 && SUBMIT_URL.indexOf('REPLACE') < 0;
+    }
+
+    // 미제출자 = 해당 분기 조직 인원 중 제출 기록이 없는 사람
+    function getPendingSubmitters(quarter) {
+        var members = getOrgMembers(quarter);
+        var subs = data.submissions[quarter] || [];
+        var subNames = subs.map(function(s) { return s.name; });
+        return members.filter(function(m) { return subNames.indexOf(m.name) < 0; });
+    }
+
+    // 실제 발송 (미제출자 중 이메일 등록된 사람에게만)
+    async function sendReminderMails(quarter, waveLabel) {
+        var pending = getPendingSubmitters(quarter);
+        var targets = pending.filter(function(m) { return EMAILS[m.name]; });
+        var success = 0, fail = 0;
+        for (var i = 0; i < targets.length; i++) {
+            var m = targets[i];
+            try {
+                await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+                    to_email: EMAILS[m.name],
+                    to_name: m.name,
+                    quarter: quarter,
+                    deadline: formatDate(REMINDER_DEADLINE),
+                    wave: waveLabel,
+                    submit_url: SUBMIT_URL
+                });
+                success++;
+                console.log('✅ ' + m.name + ' 발송 성공');
+            } catch (error) {
+                fail++;
+                console.error('❌ ' + m.name + ' 발송 실패:', error);
+            }
+        }
+        return { success: success, fail: fail, noEmail: pending.length - targets.length };
+    }
+
+    // 미리보기 (실제 발송 안 함)
+    function previewReminders() {
+        var q = document.getElementById('rmd-quarter').value;
+        var pending = getPendingSubmitters(q);
+        var withEmail = pending.filter(function(m) { return EMAILS[m.name]; });
+        var without   = pending.filter(function(m) { return !EMAILS[m.name]; });
+        var msg = '[미리보기 · 실제 발송 안 함]\n\n분기: ' + q +
+            '\n미제출자: ' + pending.length + '명' +
+            '\n발송 대상(이메일 등록됨): ' + withEmail.length + '명' +
+            (withEmail.length ? '\n  → ' + withEmail.map(function(m){return m.name;}).join(', ') : '') +
+            (without.length ? '\n\n이메일 미등록(발송 불가): ' + without.length + '명\n  → ' + without.map(function(m){return m.name;}).join(', ') : '');
+        if (!configReady()) msg += '\n\n⚠️ EmailJS 템플릿 ID / 제출 URL이 아직 설정되지 않아 실제 발송은 되지 않습니다.';
+        alert(msg);
+    }
+
+    // 수동 발송 (관리자 버튼)
+    async function manualSendReminders() {
+        if (!configReady()) { toast('EmailJS 템플릿 ID와 제출 URL을 먼저 설정하세요.'); return; }
+        var q = document.getElementById('rmd-quarter').value;
+        var targets = getPendingSubmitters(q).filter(function(m) { return EMAILS[m.name]; });
+        if (targets.length === 0) { alert('발송 대상이 없습니다. (미제출자가 없거나 모두 이메일 미등록)'); return; }
+        var names = targets.map(function(m) { return m.name; }).join(', ');
+        if (!confirm(q + ' 미제출자 ' + targets.length + '명에게 재요청 메일을 발송합니다:\n\n' + names + '\n\n발송할까요?')) return;
+        toast('📧 발송 중...');
+        var r = await sendReminderMails(q, '수동');
+        toast(r.fail === 0 ? ('✅ ' + r.success + '명 발송 완료') : ('⚠️ 성공 ' + r.success + ' / 실패 ' + r.fail));
+    }
+
+    // 자동 발송 — 오늘이 1·2·3차 날짜면 페이지 접속 시 1회 발송 (Firestore 트랜잭션으로 중복 방지)
+    async function checkReminderAuto() {
+        if (!AUTO_SEND_ENABLED) return;   // 자동 발송 스위치 (기본 꺼짐)
+        if (!fbReady || !configReady()) return;
+        var today = todayStr();
+        var wave = REMINDER_WAVES.filter(function(w) { return w.date === today; })[0];
+        if (!wave) return;
+        var notiRef = db.collection('notifications').doc('sec_' + REMINDER_QUARTER + '_' + wave.key);
+        var claimed = false;
+        try {
+            await db.runTransaction(async function(t) {
+                var doc = await t.get(notiRef);
+                if (doc.exists && doc.data().sent) { claimed = false; return; }
+                t.set(notiRef, { sent: true, at: new Date().toISOString(), wave: wave.label }, { merge: true });
+                claimed = true;
+            });
+        } catch(e) { console.error('발송권한 선점 실패(중복 방지 위해 중단):', e); return; }
+        if (!claimed) { console.log('오늘(' + wave.label + ') 이미 발송됨 — 중복 방지로 건너뜀'); return; }
+        var r = await sendReminderMails(REMINDER_QUARTER, wave.label);
+        try { await notiRef.set({ success: r.success, fail: r.fail }, { merge: true }); } catch(e) {}
+        if (r.success > 0) toast('📧 ' + wave.label + ' 자동 알림 ' + r.success + '명 발송 완료');
+    }
+
+    // 관리자 화면의 리마인더 UI 초기화
+    var rmdWired = false;
+    function initReminderUI() {
+        var sel = document.getElementById('rmd-quarter');
+        if (sel) fillSelect(sel, getQuarterOptions(), REMINDER_QUARTER);
+        var sch = document.getElementById('rmd-schedule');
+        if (sch) {
+            sch.textContent = (AUTO_SEND_ENABLED ? '자동 발송 ON — ' : '자동 발송 OFF (수동 버튼만 사용) — 예정일 ') +
+                REMINDER_WAVES.map(function(w){ return w.label + ': ' + w.date; }).join('  /  ') +
+                (configReady() ? '' : '   ⚠️ 템플릿 ID/제출 URL 미설정 (발송 비활성)');
+        }
+        if (!rmdWired) {
+            var bP = document.getElementById('btn-rmd-preview');
+            var bS = document.getElementById('btn-rmd-send');
+            if (bP) bP.addEventListener('click', previewReminders);
+            if (bS) bS.addEventListener('click', manualSendReminders);
+            var bAdd = document.getElementById('btn-em-add');
+            if (bAdd) bAdd.addEventListener('click', function() {
+                var name = document.getElementById('em-name').value.trim();
+                var addr = document.getElementById('em-addr').value.trim();
+                if (!name) { toast('이름을 입력하세요.'); return; }
+                if (!addr || addr.indexOf('@') < 0) { toast('올바른 이메일을 입력하세요.'); return; }
+                saveEmailChange(function(l) { l[name] = addr; }).then(function(ok) {
+                    if (ok) { toast(name + ' 추가됨'); document.getElementById('em-name').value = ''; document.getElementById('em-addr').value = ''; }
+                });
+            });
+            var bRef = document.getElementById('btn-em-refresh');
+            if (bRef) bRef.addEventListener('click', function() { loadEmails().then(function() { renderEmailAdmin(); }); });
+            var emQ = document.getElementById('em-quarter');
+            if (emQ) emQ.addEventListener('change', renderEmailAdmin);
+            var emSearch = document.getElementById('em-search');
+            if (emSearch) emSearch.addEventListener('input', renderEmailAdmin);
+            var emOnlyMiss = document.getElementById('em-only-missing');
+            if (emOnlyMiss) emOnlyMiss.addEventListener('change', renderEmailAdmin);
+            rmdWired = true;
+        }
+        var emQsel = document.getElementById('em-quarter');
+        if (emQsel) fillSelect(emQsel, getQuarterOptions(), REMINDER_QUARTER);
+        // 최신 이메일 목록을 불러와 조직도 기반으로 표시
+        loadEmails().then(function() { renderEmailAdmin(); });
+    }
+
+    // ---- 이메일 관리 (settings/emails.list, 샐러드 앱과 공유) ----
+    async function saveEmailChange(mutator) {
+        if (!fbReady) { toast('데이터 서버에 연결되지 않았습니다.'); return false; }
+        try {
+            var snap = await db.collection('settings').doc('emails').get();
+            var docData = (snap.exists && snap.data()) || {};
+            var list = docData.list || {};
+            mutator(list);
+            docData.list = list;
+            // merge를 쓰지 않고 문서 전체를 교체 → list에서 삭제한 이름이 실제로 사라짐(삭제 반영)
+            await db.collection('settings').doc('emails').set(docData);
+            EMAILS = list;
+            renderEmailAdmin();
+            return true;
+        } catch(e) { console.error('이메일 저장 실패:', e); toast('저장 실패'); return false; }
+    }
+
+    function emSectionHead(text, color) {
+        var h = document.createElement('div');
+        h.style.cssText = 'font-size:0.8rem;font-weight:700;color:' + (color || 'var(--text-secondary)') + ';margin:6px 0 8px';
+        h.textContent = text;
+        return h;
+    }
+
+    // 이메일 한 줄 (이름 [팀] [이메일입력] [저장/추가] [삭제?])
+    function emailRow(name, opts) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-light)';
+        var nm = document.createElement('div');
+        nm.style.cssText = 'min-width:90px;font-size:0.85rem;font-weight:600';
+        nm.textContent = name;
+        row.appendChild(nm);
+        if (opts.team !== undefined) {
+            var tm = document.createElement('div');
+            tm.style.cssText = 'min-width:80px;font-size:0.75rem;color:var(--text-muted)';
+            tm.textContent = opts.team;
+            row.appendChild(tm);
+        }
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        if (opts.value) { inp.value = opts.value; } else { inp.placeholder = '이메일 주소 (미등록)'; }
+        inp.style.cssText = 'flex:1;min-width:160px';
+        row.appendChild(inp);
+        var btn = document.createElement('button');
+        btn.className = opts.value ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm';
+        btn.textContent = opts.value ? '저장' : '추가';
+        btn.addEventListener('click', function() {
+            var v = inp.value.trim();
+            if (!v || v.indexOf('@') < 0) { toast('올바른 이메일을 입력하세요.'); return; }
+            saveEmailChange(function(l) { l[name] = v; }).then(function(ok) { if (ok) toast(name + (opts.value ? ' 저장됨' : ' 추가됨')); });
+        });
+        row.appendChild(btn);
+        if (opts.onDelete) {
+            var del = document.createElement('button');
+            del.className = 'btn btn-danger btn-sm'; del.textContent = '삭제';
+            del.addEventListener('click', function() {
+                if (!confirm(name + ' 님을 이메일 목록에서 삭제할까요?\n(샐러드 앱에서도 사라집니다)')) return;
+                saveEmailChange(function(l) { delete l[name]; }).then(function(ok) { if (ok) toast(name + ' 삭제됨'); });
+            });
+            row.appendChild(del);
+        }
+        return row;
+    }
+
+    // 조직도(선택 분기) 기준 이메일 관리 렌더링
+    function renderEmailAdmin() {
+        var orgWrap = document.getElementById('em-org-list');
+        var orphanWrap = document.getElementById('em-orphan-list');
+        if (!orgWrap || !orphanWrap) return;
+        orgWrap.textContent = ''; orphanWrap.textContent = '';
+        var emQ = document.getElementById('em-quarter');
+        var q = emQ ? emQ.value : REMINDER_QUARTER;
+
+        // 1) 조직도 인원 (이름 중복 제거)
+        var inOrg = {}, members = [];
+        getOrgMembers(q).forEach(function(m) { if (!inOrg[m.name]) { inOrg[m.name] = true; members.push(m); } });
+        var haveCnt = members.filter(function(m) { return EMAILS[m.name]; }).length;
+        var missCnt = members.length - haveCnt;
+        var searchEl = document.getElementById('em-search');
+        var onlyMissEl = document.getElementById('em-only-missing');
+        var kw = searchEl ? searchEl.value.trim() : '';
+        var onlyMiss = onlyMissEl ? onlyMissEl.checked : false;
+        var shown = members.filter(function(m) {
+            if (onlyMiss && EMAILS[m.name]) return false;
+            if (kw && m.name.indexOf(kw) < 0) return false;
+            return true;
+        });
+        var headText = q + ' 조직도 인원 ' + members.length + '명 · 등록 ' + haveCnt + ' / 미등록 ' + missCnt + '명';
+        if (kw || onlyMiss) headText += '  (표시 ' + shown.length + '명)';
+        orgWrap.appendChild(emSectionHead(headText));
+        if (members.length === 0) {
+            var p = document.createElement('p');
+            p.style.cssText = 'font-size:0.83rem;color:var(--text-muted)';
+            p.textContent = '이 분기의 조직도가 없습니다. [조직도 관리]에서 인원을 먼저 등록하세요.';
+            orgWrap.appendChild(p);
+        } else if (shown.length === 0) {
+            var pe = document.createElement('p');
+            pe.style.cssText = 'font-size:0.83rem;color:var(--text-muted)';
+            pe.textContent = '조건에 맞는 인원이 없습니다.';
+            orgWrap.appendChild(pe);
+        } else {
+            shown.forEach(function(m) {
+                orgWrap.appendChild(emailRow(m.name, { team: m.team, value: EMAILS[m.name] || '' }));
+            });
+        }
+
+        // 2) 조직도에 없는 이메일 (퇴사자 등 검토 대상)
+        var orphans = Object.keys(EMAILS).filter(function(n) { return !inOrg[n]; }).sort(function(a, b) { return a.localeCompare(b, 'ko'); });
+        orphanWrap.appendChild(emSectionHead('조직도에 없는 이메일 (' + orphans.length + '명) · 퇴사자 등 검토·삭제', 'var(--danger)'));
+        if (orphans.length === 0) {
+            var p2 = document.createElement('p');
+            p2.style.cssText = 'font-size:0.83rem;color:var(--success)';
+            p2.textContent = '조직도에 없는 이메일이 없습니다. (깔끔한 상태)';
+            orphanWrap.appendChild(p2);
+        } else {
+            orphans.forEach(function(n) {
+                orphanWrap.appendChild(emailRow(n, { value: EMAILS[n], onDelete: true }));
+            });
+        }
+    }
     var CAT_MAP = [
         {label:'1. 계정 / 비밀번호', start:0, end:2},
         {label:'2. PC / 업무환경', start:2, end:5},
@@ -1631,6 +1936,7 @@
         fillSelect(document.getElementById('admin-quarter'), qOpts, cur);
         fillSelect(document.getElementById('org-quarter'), qOpts, cur);
         fillSelect(document.getElementById('reset-quarter'), qOpts, cur);
+        initReminderUI();
         renderStatus();
     }
 
@@ -1823,6 +2129,35 @@
             }
         });
 
+        // [보완] 팀/사업부에 안 속한 본부 직속 인원(수석매니저 등) 추가로 수집
+        //  각 인원 노드의 ▲▼ 버튼 onclick = moveOrgMember('소속','이름',...) 에서 소속·이름을 추출
+        var captured = {};
+        result.forEach(function(t) { t.members.forEach(function(m) { captured[m] = true; }); });
+        var extraGroups = {};
+        doc.querySelectorAll('.o-mem, .o-head').forEach(function(el) {
+            var nmEl = el.querySelector('.o-nm');
+            if (!nmEl) return;
+            var name = nmEl.textContent.trim();
+            if (!name || captured[name]) return;
+            var btn = el.querySelector('[onclick*="moveOrgMember"]');
+            if (!btn) return;
+            var mm = (btn.getAttribute('onclick') || '').match(/moveOrgMember\(\s*'([^']*)'\s*,\s*'([^']*)'/);
+            if (!mm || !mm[1]) return;
+            var grp = mm[1];
+            captured[name] = true;
+            if (!extraGroups[grp]) extraGroups[grp] = [];
+            if (extraGroups[grp].indexOf(name) < 0) extraGroups[grp].push(name);
+        });
+        Object.keys(extraGroups).forEach(function(grp) {
+            var existing = null;
+            for (var i = 0; i < result.length; i++) { if (result[i].team === grp) { existing = result[i]; break; } }
+            if (existing) {
+                extraGroups[grp].forEach(function(n) { if (existing.members.indexOf(n) < 0) existing.members.push(n); });
+            } else {
+                result.push({ team: grp, div: grp, members: extraGroups[grp] });
+            }
+        });
+
         // 경영관리팀을 맨 위로
         result.sort(function(a, b) {
             if (a.team === '경영관리팀') return -1;
@@ -1965,6 +2300,7 @@
     loadAllData().then(function() {
         initManagers();
         initChecklist();
+        loadEmails().then(function() { checkReminderAuto(); });
     });
 })();
 </script>
