@@ -1056,6 +1056,23 @@
                 </div>
             </div>
             <div class="section">
+                <div class="section-title"><span class="badge badge-warn">&#128197;</span> 발송 일정 설정</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">분기·제출 기한·1·2·3차 발송일을 설정합니다. 저장하면 즉시 반영됩니다. <b>분기마다 여기서 날짜만 바꾸면 됩니다 (코드 수정 불필요).</b></p>
+                <div class="form-row" style="flex-wrap:wrap;gap:12px;margin-bottom:10px">
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label">대상 분기</label><select id="rc-quarter"></select></div>
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label">제출 기한</label><input type="date" id="rc-deadline"></div>
+                </div>
+                <div class="form-row" style="flex-wrap:wrap;gap:12px;margin-bottom:10px">
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label">1차 발송일</label><input type="date" id="rc-w1"></div>
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label">2차 발송일</label><input type="date" id="rc-w2"></div>
+                    <div class="form-group" style="margin-bottom:0"><label class="form-label">3차 발송일</label><input type="date" id="rc-w3"></div>
+                </div>
+                <div class="form-row" style="align-items:center;gap:14px">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer"><input type="checkbox" id="rc-auto" style="width:16px;height:16px;cursor:pointer"> 자동 발송 사용</label>
+                    <button class="btn btn-primary btn-sm" id="btn-rc-save">일정 저장</button>
+                </div>
+            </div>
+            <div class="section">
                 <div class="section-title"><span class="badge badge-blue">&#128231;</span> 미제출자 알림 메일</div>
                 <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">미제출자에게 자가점검 재요청 메일을 발송합니다. 지정한 1·2·3차 날짜에는 관리 페이지 접속 시 자동 발송되며, 하루에 한 번만 발송됩니다(중복 방지).</p>
                 <div class="form-row" style="margin-bottom:10px">
@@ -1317,18 +1334,51 @@
     var SUBMIT_URL         = 'https://netformrnd.github.io/Security-Policy/';  // ④ 자가점검 페이지 실제 주소
     try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.error('EmailJS init 실패:', e); }
 
-    // ★ 자동 발송 스위치 — 날짜(팀 확정) 전까지는 false로 꺼둠. 확정되면 true로 바꾸면 지정 날짜에 자동 발송됨.
-    //   (false여도 관리자 화면의 "미제출자 재요청 발송" 수동 버튼은 정상 작동)
-    var AUTO_SEND_ENABLED = false;
+    // ============================================================
+    //  발송 일정 설정 (RC) — 관리자 화면에서 수정, Firebase에 저장
+    //  아래는 "기본값"이며, 저장된 설정이 있으면 그 값으로 덮어씁니다.
+    //  ※ 분기마다 관리자 → 설정 → "발송 일정 설정"에서 바꾸면 됨 (코드 수정 불필요)
+    // ============================================================
+    var RC = {
+        quarter: '2026-Q3',
+        deadline: '2026-09-28',
+        autoEnabled: true,
+        waves: [
+            { key: '1', date: '2026-09-23', label: '1차' },
+            { key: '2', date: '2026-09-28', label: '2차' },
+            { key: '3', date: '2026-09-30', label: '3차' }
+        ]
+    };
 
-    // 리마인더 대상 분기 · 기한 · 1·2·3차 발송 날짜(YYYY-MM-DD) — 분기마다 이 값만 갱신
-    var REMINDER_QUARTER  = '2026-Q3';
-    var REMINDER_DEADLINE = '2026-09-28';
-    var REMINDER_WAVES = [
-        { key: '1', date: '2026-09-23', label: '1차' },
-        { key: '2', date: '2026-09-28', label: '2차' },
-        { key: '3', date: '2026-09-30', label: '3차' }
-    ];
+    async function loadReminderConfig() {
+        if (!fbReady) return;
+        try {
+            var snap = await db.collection(COL).doc('config').get();
+            if (snap.exists && snap.data().reminder) {
+                var r = snap.data().reminder;
+                if (r.quarter) RC.quarter = r.quarter;
+                if (r.deadline) RC.deadline = r.deadline;
+                if (typeof r.autoEnabled === 'boolean') RC.autoEnabled = r.autoEnabled;
+                if (r.waves && r.waves.length === 3) {
+                    RC.waves = r.waves.map(function(d, i) { return { key: String(i+1), date: d, label: (i+1) + '차' }; });
+                }
+            }
+        } catch(e) { console.error('loadReminderConfig error:', e); }
+    }
+
+    async function saveReminderConfig() {
+        try {
+            await db.collection(COL).doc('config').set({
+                reminder: {
+                    quarter: RC.quarter,
+                    deadline: RC.deadline,
+                    autoEnabled: RC.autoEnabled,
+                    waves: RC.waves.map(function(w) { return w.date; })
+                }
+            }, { merge: true });
+            return true;
+        } catch(e) { console.error('saveReminderConfig error:', e); toast('설정 저장 실패'); return false; }
+    }
 
     var EMAILS = {};  // settings/emails 문서(이름→이메일)에서 로드, 샐러드 앱과 공유
     async function loadEmails() {
@@ -1364,7 +1414,7 @@
                     to_email: EMAILS[m.name],
                     to_name: m.name,
                     quarter: quarter,
-                    deadline: formatDate(REMINDER_DEADLINE),
+                    deadline: formatDate(RC.deadline),
                     wave: waveLabel,
                     submit_url: SUBMIT_URL
                 });
@@ -1408,12 +1458,12 @@
 
     // 자동 발송 — 오늘이 1·2·3차 날짜면 페이지 접속 시 1회 발송 (Firestore 트랜잭션으로 중복 방지)
     async function checkReminderAuto() {
-        if (!AUTO_SEND_ENABLED) return;   // 자동 발송 스위치 (기본 꺼짐)
+        if (!RC.autoEnabled) return;   // 자동 발송 스위치 (기본 꺼짐)
         if (!fbReady || !configReady()) return;
         var today = todayStr();
-        var wave = REMINDER_WAVES.filter(function(w) { return w.date === today; })[0];
+        var wave = RC.waves.filter(function(w) { return w.date === today; })[0];
         if (!wave) return;
-        var notiRef = db.collection('notifications').doc('sec_' + REMINDER_QUARTER + '_' + wave.key);
+        var notiRef = db.collection('notifications').doc('sec_' + RC.quarter + '_' + wave.key);
         var claimed = false;
         try {
             await db.runTransaction(async function(t) {
@@ -1424,7 +1474,7 @@
             });
         } catch(e) { console.error('발송권한 선점 실패(중복 방지 위해 중단):', e); return; }
         if (!claimed) { console.log('오늘(' + wave.label + ') 이미 발송됨 — 중복 방지로 건너뜀'); return; }
-        var r = await sendReminderMails(REMINDER_QUARTER, wave.label);
+        var r = await sendReminderMails(RC.quarter, wave.label);
         try { await notiRef.set({ success: r.success, fail: r.fail }, { merge: true }); } catch(e) {}
         if (r.success > 0) toast('📧 ' + wave.label + ' 자동 알림 ' + r.success + '명 발송 완료');
     }
@@ -1433,11 +1483,11 @@
     var rmdWired = false;
     function initReminderUI() {
         var sel = document.getElementById('rmd-quarter');
-        if (sel) fillSelect(sel, getQuarterOptions(), REMINDER_QUARTER);
+        if (sel) fillSelect(sel, getQuarterOptions(), RC.quarter);
         var sch = document.getElementById('rmd-schedule');
         if (sch) {
-            sch.textContent = (AUTO_SEND_ENABLED ? '자동 발송 ON — ' : '자동 발송 OFF (수동 버튼만 사용) — 예정일 ') +
-                REMINDER_WAVES.map(function(w){ return w.label + ': ' + w.date; }).join('  /  ') +
+            sch.textContent = (RC.autoEnabled ? '자동 발송 ON — ' : '자동 발송 OFF (수동 버튼만 사용) — 예정일 ') +
+                RC.waves.map(function(w){ return w.label + ': ' + w.date; }).join('  /  ') +
                 (configReady() ? '' : '   ⚠️ 템플릿 ID/제출 URL 미설정 (발송 비활성)');
         }
         if (!rmdWired) {
@@ -1463,12 +1513,44 @@
             if (emSearch) emSearch.addEventListener('input', renderEmailAdmin);
             var emOnlyMiss = document.getElementById('em-only-missing');
             if (emOnlyMiss) emOnlyMiss.addEventListener('change', renderEmailAdmin);
+            var bRcSave = document.getElementById('btn-rc-save');
+            if (bRcSave) bRcSave.addEventListener('click', saveReminderConfigFromUI);
             rmdWired = true;
         }
+        fillReminderConfigUI();
         var emQsel = document.getElementById('em-quarter');
-        if (emQsel) fillSelect(emQsel, getQuarterOptions(), REMINDER_QUARTER);
+        if (emQsel) fillSelect(emQsel, getQuarterOptions(), RC.quarter);
         // 최신 이메일 목록을 불러와 조직도 기반으로 표시
         loadEmails().then(function() { renderEmailAdmin(); });
+    }
+
+    // 발송 일정 설정(RC) UI 채우기 / 저장
+    function fillReminderConfigUI() {
+        var qs = document.getElementById('rc-quarter');
+        if (qs) fillSelect(qs, getQuarterOptions(), RC.quarter);
+        var dl = document.getElementById('rc-deadline'); if (dl) dl.value = RC.deadline || '';
+        var w1 = document.getElementById('rc-w1'); if (w1) w1.value = (RC.waves[0] || {}).date || '';
+        var w2 = document.getElementById('rc-w2'); if (w2) w2.value = (RC.waves[1] || {}).date || '';
+        var w3 = document.getElementById('rc-w3'); if (w3) w3.value = (RC.waves[2] || {}).date || '';
+        var au = document.getElementById('rc-auto'); if (au) au.checked = !!RC.autoEnabled;
+    }
+    async function saveReminderConfigFromUI() {
+        var q = document.getElementById('rc-quarter').value;
+        var dl = document.getElementById('rc-deadline').value;
+        var w1 = document.getElementById('rc-w1').value;
+        var w2 = document.getElementById('rc-w2').value;
+        var w3 = document.getElementById('rc-w3').value;
+        if (!dl || !w1 || !w2 || !w3) { toast('기한과 1·2·3차 날짜를 모두 입력하세요.'); return; }
+        RC.quarter = q;
+        RC.deadline = dl;
+        RC.autoEnabled = document.getElementById('rc-auto').checked;
+        RC.waves = [
+            { key: '1', date: w1, label: '1차' },
+            { key: '2', date: w2, label: '2차' },
+            { key: '3', date: w3, label: '3차' }
+        ];
+        var ok = await saveReminderConfig();
+        if (ok) { toast('발송 일정이 저장되었습니다.'); initReminderUI(); }
     }
 
     // ---- 이메일 관리 (settings/emails.list, 샐러드 앱과 공유) ----
@@ -1542,7 +1624,7 @@
         if (!orgWrap || !orphanWrap) return;
         orgWrap.textContent = ''; orphanWrap.textContent = '';
         var emQ = document.getElementById('em-quarter');
-        var q = emQ ? emQ.value : REMINDER_QUARTER;
+        var q = emQ ? emQ.value : RC.quarter;
 
         // 1) 조직도 인원 (이름 중복 제거)
         var inOrg = {}, members = [];
@@ -2300,7 +2382,7 @@
     loadAllData().then(function() {
         initManagers();
         initChecklist();
-        loadEmails().then(function() { checkReminderAuto(); });
+        Promise.all([loadEmails(), loadReminderConfig()]).then(function() { checkReminderAuto(); });
     });
 })();
 </script>
